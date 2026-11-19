@@ -1,0 +1,89 @@
+{
+  "network": "qorechain-diana",
+  "evmChainId": 9800,
+  "payGate": "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05",
+  "token": "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
+  "ownerCosmos": "qor143f0ghn8slqguwez73087dvq8lqnuuukqdu9fl",
+  "ownerEvm": "0xaC52f45E6787c08E3B22f45e7f35803Fc13e7396",
+  "agentEvm": "0xaC52f45E6787c08E3B22f45e7f35803Fc13e7396",
+  "timelockDelay": "60",
+  "dailyCap": "2500000000",
+  "agentUntil": "1797682327",
+  "transactions": [
+    {
+      "hash": "C46F2171A4F2668ADB2749158F45FA9061FFB59369C81E111682CF47CB4ACB97",
+      "tier": "pqc",
+      "note": "open EVM window for PayGate deploy"
+    },
+    {
+      "hash": "0xb423a91a69a3b3141f58d96ed360e62ce18570cffecc922f9cea5d960b8f7637",
+      "tier": "classical",
+      "note": "deploy PayGate at 0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+    },
+    {
+      "hash": "4E9C091B8B8B7BCEB9441FD08558C47C23566EE9D09DA4D50ACA044E791481AD",
+      "tier": "pqc",
+      "note": "close PayGate deploy window"
+    },
+    {
+      "hash": "E1796894B9AAF23D653758FB10E65BCE14968A8DBBEF4E127C3E95FB8F6AC9E4",
+      "tier": "pqc",
+      "note": "link agent 0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be with spending rule for PayGate.pay and PayGate.queue"
+    },
+    {
+      "hash": "EB15376FB38D64F24CE20A23890186F8FB97F803C5EC23DFCA01A9C1AF84DC8A",
+      "tier": "pqc",
+      "note": "swap 500000 uqor for fUSD on pool 2"
+    },
+    {
+      "hash": "E54B40E1D584D1B6CAB4F4D6B1FA8EA350918D4C2A6D363241041BB62F5790E3",
+      "tier": "pqc",
+      "note": "MsgConvertCoin of 21932 fUSD base units into PayGate"
+    },
+    {
+      "hash": "37F80BAC4C98B5955131871DD4CFD680BC315195BE9B3BE79519101E8615F759",
+      "tier": "pqc",
+      "note": "fund the vendor account for key registration"
+    },
+    {
+      "hash": "1661304AA09E8C464D41C3B904E11AD20FFDECF538E08B6F17E34787D6F142A9",
+      "tier": "enrollment",
+      "note": "vendor ML-DSA-87 registration"
+    },
+    {
+      "hash": "84F9262A2F08BF97E5CEECBD8FF43E85A8C0ED0DEDFAE4861008FCB667D9525E",
+      "tier": "pqc",
+      "note": "open window to propose the vendor"
+    },
+    {
+      "hash": "0xc256f81ea8e04778ddc2d6e038af7e75e02d0903ee4a301e015a6299a6ba829d",
+      "tier": "classical",
+      "note": "propose AddVendor"
+    },
+    {
+      "hash": "A59238C967FB381E839AFD94B89CD742FDC601DD84BE6477C691038F2D42661E",
+      "tier": "pqc",
+      "note": "close window after proposing the vendor"
+    },
+    {
+      "hash": "11E2581CB597FEC3CDD27DDA263ABFF9DC559B705C57A83F6B6E52D4C64A8515",
+      "tier": "pqc",
+      "note": "open window to execute AddVendor"
+    },
+    {
+      "hash": "0xa9db709361f1f40b5a5aa61f4e5c09497b8089947337db919b6e013410677395",
+      "tier": "classical",
+      "note": "execute AddVendor"
+    },
+    {
+      "hash": "9EEB5E77642CEA9AEC39C80A9569DA80637EB4ED871450D5AD285627186D574D",
+      "tier": "pqc",
+      "note": "close window after AddVendor"
+    },
+    {
+      "hash": "3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84",
+      "tier": "pqc",
+      "note": "agent pay OK_PAY"
+    }
+  ]
+}

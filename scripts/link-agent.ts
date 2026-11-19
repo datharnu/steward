@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import {
+  fetchAuthenticators,
   linkAuthenticatorMsgs,
+  msg,
   signAuthenticatorLinkEip191,
 } from "@qorechain/sdk";
 import { TESTNET } from "haven-pq-kit";
@@ -43,26 +45,38 @@ async function main(): Promise<void> {
     account: owner.cosmos,
     privateKey: agent.privateKey,
   });
-
-  const msgs = linkAuthenticatorMsgs({
-    owner: owner.cosmos,
-    account: owner.cosmos,
-    chainId: TESTNET.chainId,
-    scheme: "secp256k1",
-    pubkey: proof.pubkey,
-    permissions: ["evm"],
-    expiryUnix,
-    label: "steward-paygate-agent",
-    possessionProof: proof.possessionProof,
-    spendingRule: {
-      id: "steward-agent",
-      enabled: true,
-      perTxLimit: "1",
-      dailyLimit: "1",
-      allowedDenoms: [],
-      allowedEvmCalls: allowedCalls,
-    },
-  });
+  const rule = {
+    id: "steward-agent",
+    enabled: true,
+    perTxLimit: "1",
+    dailyLimit: "1",
+    allowedDenoms: [],
+    allowedEvmCalls: allowedCalls,
+    denomLimits: [],
+  };
+  const linked = await fetchAuthenticators({ rest: TESTNET.rest, address: owner.cosmos }).catch(() => []);
+  const already = linked.some((key) => !key.revoked && key.pubkeyHex.toLowerCase() === agent.evm.slice(2).toLowerCase());
+  // Updating replaces the account's rules. The key from the spike is already linked, so it is not registered again.
+  const msgs = already
+    ? [
+        msg.abstractaccount.updateSpendingRules({
+          owner: owner.cosmos,
+          accountAddress: owner.cosmos,
+          rules: [rule],
+        }),
+      ]
+    : linkAuthenticatorMsgs({
+        owner: owner.cosmos,
+        account: owner.cosmos,
+        chainId: TESTNET.chainId,
+        scheme: "secp256k1",
+        pubkey: proof.pubkey,
+        permissions: ["evm"],
+        expiryUnix,
+        label: "steward-paygate-agent",
+        possessionProof: proof.possessionProof,
+        spendingRule: rule,
+      });
 
   const hash = await broadcast(owner, msgs, "hybrid");
   console.log(`linked ${agent.evm} -> ${owner.cosmos} for ${allowedCalls.join(", ")} (tx ${hash})`);

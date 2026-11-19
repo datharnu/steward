@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { TESTNET } from "haven-pq-kit";
 import { encodeDeployData, type Address, type Hex } from "viem";
-import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { qorechainDiana } from "haven-pq-kit";
 import { FUSD_ADDRESS, PAYGATE_ABI } from "../src/ts/paygate.js";
@@ -41,14 +40,25 @@ async function main(): Promise<void> {
 
   const client = evmClient();
   const signer = privateKeyToAccount(owner.privateKey as Hex);
-  const wallet = createWalletClient({ account: signer, chain: qorechainDiana, transport: http(TESTNET.evmRpc) });
 
   const { result, openHash, closeHash } = await withEvmWindow(
     ownerName,
-    { txs: 1, maxValueUqor: "5000000", blocks: 120 },
+    { txs: 1, maxValueUqor: "3000000", blocks: 200 },
     async () => {
+      const nonce = await client.getTransactionCount({ address: signer.address, blockTag: "pending" });
+      const gasPrice = await client.getGasPrice();
       const gas = await client.estimateGas({ account: signer, data: deployData });
-      const hash = await wallet.sendTransaction({ data: deployData, gas });
+      // A creation sent through sendTransaction is rejected locally before the chain sees it.
+      const signed = await signer.signTransaction({
+        chainId: qorechainDiana.id,
+        nonce,
+        gas,
+        maxFeePerGas: gasPrice,
+        maxPriorityFeePerGas: gasPrice,
+        data: deployData,
+        type: "eip1559",
+      });
+      const hash = await client.sendRawTransaction({ serializedTransaction: signed });
       const receipt = await client.waitForTransactionReceipt({ hash });
       if (receipt.status !== "success" || !receipt.contractAddress) {
         throw new Error(`PayGate deploy failed: ${hash}`);

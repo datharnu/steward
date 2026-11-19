@@ -1,4 +1,4 @@
-import { StargateClient } from "@cosmjs/stargate";
+import { StargateClient, type Registry } from "@cosmjs/stargate";
 import { deriveSealKeys, type SealKeyPair } from "@qorechain/qoreseal";
 import {
   EthNativeSigner,
@@ -74,9 +74,10 @@ export async function broadcast(
   account: UnifiedAccount,
   messages: NativeMessages,
   signMode: "hybrid" | "classical" = "hybrid",
+  registry?: Registry,
 ): Promise<string> {
   const auth = await accountSequence(account);
-  const signer = new EthNativeSigner(account, { signMode, rest: TESTNET.rest, signBytesVersion: "auto" });
+  const signer = new EthNativeSigner(account, { signMode, rest: TESTNET.rest, signBytesVersion: "auto", registry });
   const node = await StargateClient.connect(TESTNET.rpc);
   try {
     const result = await signer.signAndBroadcast(node, {
@@ -170,13 +171,15 @@ export async function withEvmWindow<T>(
   const win = await fetchEvmWindow({ rest: TESTNET.rest, address: account.cosmos });
   if (!win.live) throw new Error(`window ${openHash} did not become live`);
   let result!: T;
+  let bodyError: unknown;
   try {
     result = await body(account, { openHash });
-  } finally {
-    // Always close the window even if the inner call reverts.
-    await new Promise((r) => setTimeout(r, 1000));
+  } catch (error) {
+    bodyError = error;
   }
+  await new Promise((r) => setTimeout(r, 1000));
   const closeHash = await broadcast(account, [closeEvmWindowMsg(account.cosmos)], "hybrid");
+  if (bodyError) throw bodyError;
   return { result, openHash, closeHash };
 }
 

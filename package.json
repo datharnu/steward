@@ -17,7 +17,8 @@
     "audit": "tsx scripts/audit.ts",
     "cli": "tsx scripts/cli.ts",
     "deploy": "tsx scripts/deploy.ts",
-    "link": "tsx scripts/link-agent.ts"
+    "link": "tsx scripts/link-agent.ts",
+    "fund": "tsx scripts/fund.ts"
   },
   "dependencies": {
     "@cosmjs/stargate": "0.39.0",

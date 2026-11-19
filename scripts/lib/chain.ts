@@ -1,4 +1,5 @@
-import { StargateClient, type Registry } from "@cosmjs/stargate";
+import type { Registry } from "@cosmjs/proto-signing";
+import { StargateClient } from "@cosmjs/stargate";
 import { deriveSealKeys, type SealKeyPair } from "@qorechain/qoreseal";
 import {
   EthNativeSigner,

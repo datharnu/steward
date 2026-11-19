@@ -46,3 +46,15 @@ The testnet timelock is 60 seconds. The contract allows from one minute to 30 da
 | First payment, 10,000 base units | `3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84` |
 
 After that payment the gate holds 11,932 base units and the vendor holds 10,000. The full list is in `deployments/paygate.json`. The owner had no faucet fUSD, so the token was bought from pool 2 and converted directly to the gate.
+
+## Three refusals after the payment
+
+19 November 2026. The policy refuses an injected payee before a transaction (`REFUSED_PAYEE_MISMATCH`). The same invoice was then submitted with the agent key, and PayGate reverted. A signature from the owner's ML-DSA key, and a replay of the paid invoice, also reverted. The chain event on each one is `execution reverted: evm transaction execution failed`.
+
+| | Hash |
+| --- | --- |
+| Injected payee | `43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03` |
+| Wrong ML-DSA key | `75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D` |
+| Replay | `27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0` |
+
+The owner account then held 27,429 uqor, which is not enough to open an EVM window. The over-cap approval and the pause were not sent. The gate still holds 11,932, which is under the 20,000 per-invoice cap, so an over-cap invoice could not be paid even if it were queued.

@@ -214,7 +214,19 @@ export class QoreChainExecutor implements ChainExecutor {
       });
 
       this.state.data.pendingFlight = undefined;
-      if (outcome.txCode === 0 && outcome.executionSuccess) {
+      let landed = outcome.txCode === 0 && outcome.executionSuccess;
+      if (outcome.txCode === 0 && !landed && outcome.reason === "execution event missing") {
+        const invState = Number(
+          await this.publicClient.readContract({
+            address: this.gate,
+            abi: PAYGATE_ABI,
+            functionName: "invoiceState",
+            args: [key],
+          }),
+        );
+        landed = (action === "pay" && invState === 2) || (action === "queue" && invState === 1);
+      }
+      if (landed) {
         if (action === "pay") {
           this.state.addSpent(mandateId, BigInt(invoice.amount));
         } else {

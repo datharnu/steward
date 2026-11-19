@@ -153,7 +153,17 @@ export class AllowlistedRelayer implements Relayer {
         };
       }
       const execEvent = events.find((e) => e.type === "abstractaccount_execution");
-      const execAttrs = Object.fromEntries((execEvent?.attributes ?? []).map((a) => [a.key, a.value]));
+      if (!execEvent) {
+        // A successful MsgExecuteEVM on this chain often has no execution event.
+        // The caller checks invoiceState before calling that a failure.
+        return {
+          txHash: result.transactionHash,
+          txCode: result.code,
+          executionSuccess: false,
+          reason: "execution event missing",
+        };
+      }
+      const execAttrs = Object.fromEntries((execEvent.attributes ?? []).map((a) => [a.key, a.value]));
       const ok = execAttrs.success === "true";
       return {
         txHash: result.transactionHash,

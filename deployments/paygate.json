@@ -84,6 +84,21 @@
       "hash": "3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84",
       "tier": "pqc",
       "note": "agent pay OK_PAY"
+    },
+    {
+      "hash": "43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03",
+      "tier": "refused",
+      "note": "demo 2: injected payee submitted by the agent key, PayGate refused"
+    },
+    {
+      "hash": "75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D",
+      "tier": "refused",
+      "note": "demo 3: invoice signed by the wrong ML-DSA key, PayGate refused"
+    },
+    {
+      "hash": "27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0",
+      "tier": "refused",
+      "note": "demo 4: replay of the paid invoice, PayGate refused"
     }
   ]
 }

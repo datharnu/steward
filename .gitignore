@@ -1,8 +1,9 @@
 node_modules/
 out/
 cache/
+.next/
 .env
 *.env
 .DS_Store
 agent-state/
-.next/
+*.tsbuildinfo

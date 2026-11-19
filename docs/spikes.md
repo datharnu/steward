@@ -8,7 +8,7 @@
 | Agent | `0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be` |
 | PayStub | `0x500ccce41a3d219ea7751b89a59bc0248539f734` |
 
-`PayStub.pay()` is a stand-in target. It holds no tokens and pays nobody. The real gate is not written yet.
+`PayStub.pay()` was the stand-in target for the spike. It holds no tokens and pays nobody. The live gate is PayGate, in the next section.
 
 ## What was linked
 

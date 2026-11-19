@@ -1,0 +1,135 @@
+/* Identity: a pay slot. Owner is copper, vendor is blue, agent is stone.
+   Paid, queued and refused are status colours, never brand. */
+
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #16130f;
+  --color-surface: #221c16;
+  --color-ink: #f3ecdf;
+  --color-muted: #a89884;
+  --color-line: #3a322a;
+  --color-brand: #c46a3a;
+  --color-on-brand: #1a100a;
+  --color-vendor: #6ea4c4;
+  --color-agent: #8a8176;
+  --color-paid: #6fbf8d;
+  --color-queued: #b7a4d6;
+  --color-refused: #e08a7e;
+  --text-body: 1.0625rem;
+  --leading-body: 1.55;
+}
+
+html[data-theme="light"] {
+  --color-canvas: #f6f1e8;
+  --color-surface: #fffdf8;
+  --color-ink: #1c1612;
+  --color-muted: #6e6256;
+  --color-line: #e4d9cc;
+  --color-brand: #a24e28;
+  --color-on-brand: #fff8f2;
+  --color-vendor: #2a5670;
+  --color-agent: #6b6258;
+  --color-paid: #1f6b42;
+  --color-queued: #5a4a78;
+  --color-refused: #9d3428;
+}
+
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), sans-serif;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+input[type="range"] {
+  accent-color: var(--color-brand);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.word {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-weight: 450;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.rise {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+}
+
+::view-transition-new(root) {
+  clip-path: inset(0 0 0 0);
+  animation-name: slot-open;
+}
+
+@keyframes slot-open {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 809px) {
+  .app-side {
+    display: none;
+  }
+  .app-tabs {
+    display: flex;
+  }
+}
+
+@media (min-width: 810px) {
+  .app-tabs {
+    display: none;
+  }
+}

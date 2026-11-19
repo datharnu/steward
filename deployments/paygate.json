@@ -99,6 +99,66 @@
       "hash": "27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0",
       "tier": "refused",
       "note": "demo 4: replay of the paid invoice, PayGate refused"
+    },
+    {
+      "hash": "99700A69BF2AC71C0D997EE2ECE5682BA673543771C4A18B11403A13485D76A5",
+      "tier": "pqc",
+      "note": "swap 500000 uqor for fUSD on pool 2"
+    },
+    {
+      "hash": "63F2352EE1104A5470D94AD4823EAE7B6F2177E166C2EC796FEBA90953819E53",
+      "tier": "pqc",
+      "note": "MsgConvertCoin of 21930 fUSD base units into PayGate"
+    },
+    {
+      "hash": "44331E7905651F0B8F49A787ECCADE4CD1F5FF5B51B9FD2AD92C29044F41443E",
+      "tier": "pqc",
+      "note": "queue a 25,000 invoice, over the 20,000 per-invoice cap"
+    },
+    {
+      "hash": "02889290D115C1EEF5E4F98B2D3E00C4A3E8AE87013FE86D1E426C550EB90BE9",
+      "tier": "pqc",
+      "note": "open the window for the over-cap approval"
+    },
+    {
+      "hash": "0x26606a97330b87cba8d1efd683a56419a50c5e00cc7e105c8f78ef73197573ba",
+      "tier": "classical",
+      "note": "owner ML-DSA approveQueued of the 25,000 invoice"
+    },
+    {
+      "hash": "BA58A6DFC12349E430A1EC18B742C26A4B5AE581955729A5F06CB2E38EDAE060",
+      "tier": "pqc",
+      "note": "close the over-cap approval window"
+    },
+    {
+      "hash": "C993399F401CF6728F17E8FEDAF26C4D358A7566FFD12B4A8F17159326BED0DD",
+      "tier": "pqc",
+      "note": "open the window to pause PayGate"
+    },
+    {
+      "hash": "0x598cbc7bb5138e36512ced1f04a0950828bf1d774500f792846307640565e5c2",
+      "tier": "classical",
+      "note": "owner ML-DSA pause of PayGate"
+    },
+    {
+      "hash": "25228189369B1BAA8C8A682E9E1090FB3093EB6E1F3E9A4186CA71DD8260DB3C",
+      "tier": "pqc",
+      "note": "close the pause window"
+    },
+    {
+      "hash": "DE49539513A8BD60B4A6341151CC185927CF9C05C9985C8D78789434E1797F40",
+      "tier": "pqc",
+      "note": "open the window to unpause PayGate"
+    },
+    {
+      "hash": "0xd2e27f6bc29c76a64b4935601fe225296533a8e6824f392f2d57fe2354035f2c",
+      "tier": "classical",
+      "note": "owner ML-DSA unpause of PayGate"
+    },
+    {
+      "hash": "157A4F067789851883736EEE8594888825004B284C116857E5F3991F27D1950A",
+      "tier": "pqc",
+      "note": "close the unpause window"
     }
   ]
 }

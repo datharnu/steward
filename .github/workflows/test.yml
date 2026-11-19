@@ -25,3 +25,23 @@ jobs:
       - run: npm run test:ts
       - name: contracts reach ML-DSA only through the precompiles, no ecrecover
         run: npm run cbom:check
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - name: desk rules
+        run: npm run engine
+      - run: npx playwright install --with-deps chromium
+      - name: headless smoke test on a production build (390, 768, 1280 px)
+        run: npm run smoke

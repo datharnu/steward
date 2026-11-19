@@ -2,9 +2,8 @@
  * Demo scenes that had not been sent yet.
  *
  * The owner account can afford three broadcasts at the fee that landed the
- * first payment. Queue-then-approve and pause each need an EVM window as well,
- * and the gate does not hold enough fUSD to pay an invoice over the 20,000
- * unit cap. Those stay listed in docs/DEMO.md as not run.
+ * first payment. The over-cap approval and the pause are sent by
+ * `scripts/finish-demo.ts`, which needs the gate to hold more than the cap.
  *
  * Scenes:
  *  2. An injected memo names an attacker. The policy refuses. The same invoice,

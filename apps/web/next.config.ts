@@ -33,8 +33,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/live", destination: "/", permanent: false },
-      { source: "/app", destination: "/", permanent: false },
+      { source: "/live", destination: "/gate", permanent: false },
+      { source: "/app", destination: "/try", permanent: false },
     ];
   },
 };

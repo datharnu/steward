@@ -7,3 +7,5 @@ cache/
 .DS_Store
 agent-state/
 *.tsbuildinfo
+test-results/
+playwright-report/

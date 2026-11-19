@@ -321,7 +321,12 @@ async function main(): Promise<void> {
           spentToday: spentToday.toString(),
           fusdBalance: balance.toString(),
           spendingRules: rules.rules,
-          authenticatorsCount: auths.length,
+          authenticators: auths.map((key) => ({
+            label: key.label,
+            revoked: key.revoked,
+            expiryUnix: key.expiryUnix.toString(),
+            permissions: key.permissions,
+          })),
           localState: state.data,
         },
         null,

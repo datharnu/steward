@@ -29,23 +29,53 @@ function hexToBytes(hex: string): Uint8Array {
   return out;
 }
 
-/** Recompute the receipt hash and check the ML-DSA-87 signature in this browser. */
-export async function checkReceipt(): Promise<void> {
+function bodyHashOf(body: ReceiptBody): string {
+  return `0x${bytesToHex(keccak_256(utf8ToBytes(canonicalJson(body))))}`;
+}
+
+async function loadReceipt(): Promise<SignedReceipt> {
   const response = await fetch("/receipt.json");
   if (!response.ok) throw new Error("The receipt file did not load.");
-  const receipt = (await response.json()) as SignedReceipt;
-  const hash = `0x${bytesToHex(keccak_256(utf8ToBytes(canonicalJson(receipt.body))))}`;
+  return (await response.json()) as SignedReceipt;
+}
+
+async function signatureChecks(receipt: SignedReceipt, hash: string): Promise<boolean> {
+  const { pqVerify } = await import("@qorechain/qoresign");
+  return pqVerify(
+    hexToBytes(receipt.signerPubkeyHex),
+    utf8ToBytes(`steward.receipt.v1|${hash.toLowerCase()}`),
+    hexToBytes(receipt.signatureHex),
+  );
+}
+
+/** Recompute the receipt hash and check the ML-DSA-87 signature in this browser. */
+export async function checkReceipt(): Promise<void> {
+  const receipt = await loadReceipt();
+  const hash = bodyHashOf(receipt.body);
   if (hash.toLowerCase() !== receipt.bodyHash.toLowerCase()) {
     throw new Error("The receipt hash does not match its body.");
   }
   if (String(receipt.body.txHash).toLowerCase() !== PAYMENT_HASH.toLowerCase()) {
     throw new Error("This receipt is not the paid invoice.");
   }
-  const { pqVerify } = await import("@qorechain/qoresign");
-  const ok = pqVerify(
-    hexToBytes(receipt.signerPubkeyHex),
-    utf8ToBytes(`steward.receipt.v1|${hash.toLowerCase()}`),
-    hexToBytes(receipt.signatureHex),
-  );
-  if (!ok) throw new Error("The ML-DSA signature does not check.");
+  if (!(await signatureChecks(receipt, hash))) throw new Error("The ML-DSA signature does not check.");
+}
+
+/**
+ * Change one character of the amount in memory, recompute the hash, and check the
+ * original signature. The file at /receipt.json is left as it is.
+ */
+export async function checkTamperedReceipt(): Promise<string> {
+  const receipt = await loadReceipt();
+  const amount = String(receipt.body.amount ?? "");
+  if (!/^\d+$/.test(amount)) throw new Error("The receipt has no amount to change.");
+  const changed = `${amount.slice(0, -1)}${amount.endsWith("1") ? "2" : "1"}`;
+  const hash = bodyHashOf({ ...receipt.body, amount: changed });
+  if (hash.toLowerCase() === receipt.bodyHash.toLowerCase()) {
+    throw new Error("The change did not alter the hash.");
+  }
+  if (await signatureChecks(receipt, hash)) {
+    throw new Error("The altered receipt still checked. That should not happen.");
+  }
+  return `As expected. Changed the amount from ${amount} to ${changed} in memory and recomputed the hash. The file was not changed. The ML-DSA signature does not check.`;
 }

@@ -27,6 +27,6 @@ The owner's fUSD sits in PayGate, not in the account the agent acts for. It leav
 - **The off-chain layers.** The mandate and the policy run on the agent's machine. If that machine is fully compromised they can be skipped. The chain rule and PayGate still hold.
 - **Receipts.** A receipt proves what the agent signed with its ML-DSA key, and `npm run audit` checks each one against the chain. It does not prove the agent's reasoning was right.
 - **A precompile that returns true for a bad signature.** Steward trusts the chain's verifier. The Foundry mock has a lying mode, and `test_lyingVerify_stillCannotRedirect` shows that even then money goes only to a registered payout.
-- **Expiry of the agent's link.** The authenticator expires after the chain's session lifetime. After that the agent cannot act until the owner links it again. That fails closed, but it stops payments.
+- **Expiry of the agent's link.** The chain's session is 24 hours. After that the agent cannot act until the owner runs `npm run link`, which revokes the authenticator and registers a new one. That fails closed, and it stops new payments. The recorded transactions stay valid.
 - **The vendor page in the browser.** It makes a new key in the tab and does not save or register it. A file it signs is refused by PayGate. It shows how signing works. It is not onboarding.
 - Nothing here has been audited.

@@ -2,10 +2,10 @@ import Link from "next/link";
 import { Ledger } from "@/components/ledger";
 
 const LAYERS = [
-  { name: "Chain rule", body: "The agent key may call pay and queue on the gate. It cannot call the token, or send coins." },
-  { name: "PayGate", body: "Pays only a vendor-signed invoice, to the payout the owner registered, once, inside the caps." },
-  { name: "Mandate", body: "The owner’s signed budget and vendor list. Unsigned, expired, or another agent’s is refused." },
-  { name: "Policy", body: "Whatever the planner says, the action is clamped to the mandate before a transaction exists." },
+  { where: "On chain", name: "Chain rule", body: "The agent key may call pay and queue on the gate. It cannot call the token, or send coins." },
+  { where: "On chain", name: "PayGate", body: "Pays only a vendor-signed invoice, to the payout the owner registered, once, inside the caps." },
+  { where: "On the agent", name: "Mandate", body: "The owner’s signed budget and vendor list. A stolen machine can skip this check." },
+  { where: "On the agent", name: "Policy", body: "Clamps the planner to the mandate before a transaction exists. A stolen machine can skip this too." },
 ];
 
 export default function Home() {
@@ -18,6 +18,11 @@ export default function Home() {
         Even if the planner is fully prompt-injected, the only payment the chain allows is an invoice signed with the
         vendor’s ML-DSA key, to the vendor the owner approved, once, within the caps.
       </p>
+      <p className="mt-3 max-w-[62ch] text-[17px] text-muted">
+        This proves who was paid and that the vendor signed. It does not prove the work was done. The agent key called
+        the token directly, and the chain refused that call,{" "}
+        <span className="font-mono text-[15px]">92854431F2…028789</span>.
+      </p>
       <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
         <Link href="/try" className="inline-flex min-h-11 items-center rounded-md bg-brand px-4 text-[15px] text-on-brand">
           Try to break it
@@ -29,12 +34,16 @@ export default function Home() {
 
       <section className="mt-14" aria-labelledby="layers">
         <h2 id="layers" className="text-[20px] font-medium">
-          Four layers, each refuses on its own
+          Two of these hold on chain
         </h2>
+        <p className="mt-2 max-w-[62ch] text-[15px] text-muted">
+          The spending rule and PayGate still refuse if the agent’s machine is stolen. The mandate and the policy run on
+          that machine.
+        </p>
         <ol className="mt-4 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 md:grid-cols-4">
-          {LAYERS.map((layer, index) => (
+          {LAYERS.map((layer) => (
             <li key={layer.name} className="bg-canvas p-4">
-              <p className="font-mono text-[12px] text-muted">{index + 1}</p>
+              <p className="font-mono text-[12px] text-muted">{layer.where}</p>
               <p className="mt-1 text-[16px] font-medium">{layer.name}</p>
               <p className="mt-1 text-[14px] text-muted">{layer.body}</p>
             </li>

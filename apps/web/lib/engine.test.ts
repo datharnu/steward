@@ -31,7 +31,8 @@ assert.equal(transfer.mark, "Already tested");
 assert.equal(transfer.gateAfter, RECORDED_LEFT);
 
 const other = judge({ ...base, payee: "other", amount: 5_000n });
-assert.equal(other.code, "WrongPayee");
+assert.equal(other.code, "REFUSED_PAYEE_MISMATCH");
+assert.match(other.reason, /WrongPayee/);
 
 const over = judge({ ...base, amount: 20_001n });
 assert.equal(over.code, "OverInvoiceCap");

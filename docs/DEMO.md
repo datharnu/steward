@@ -22,18 +22,18 @@ The chain's event for a reverted agent call says `execution reverted: evm transa
 
 - `npm run evidence`: every recorded hash, checked on chain through `@qorechain/mcp`.
 - `forge test --match-test test_pay_refusesAPayeeThatIsNotTheVendorsPayout` (and the other names in `test/PayGate.t.sol`): each refusal against a mocked precompile.
-- The site: `/gate` reads PayGate live and checks the agent's receipt signature in the browser. `/try` shows each refusal and its recorded hash.
+- The site: `/gate` reads PayGate live, checks the agent's receipt signature in the browser, and fails that check after one character of the amount is changed. `/try` shows each refusal and its recorded hash. The different-payee case is `REFUSED_PAYEE_MISMATCH`.
 
 ## The video, shot by shot (2 min 50 s)
 
 | Time | Screen | Voice |
 | --- | --- | --- |
-| 0:00–0:15 | Homepage, the headline and the four layers | "This is Steward. An AI clerk pays a business's invoices. Even if it's fully prompt-injected, it can't pay anyone the owner didn't approve." |
+| 0:00–0:15 | Homepage, the headline and the four layers | "This is Steward. An AI clerk pays invoices, and it can't pay anyone the owner didn't approve. Two layers hold on chain. It proves who was paid, not that the work was done." |
 | 0:15–0:35 | Terminal: `npm run cli -- status`. Then the homepage ledger, step 6 | "The agent's key is linked to the owner's account with one rule: it may call pay and queue on the gate. Here it tried to call the token directly, and the chain refused it." |
 | 0:35–0:55 | Ledger step 1, then `/gate` showing the live balance, cap and Paid | "The money sits in PayGate. This invoice was signed by the vendor's ML-DSA key and paid once. The gate page reads that from the chain now." |
 | 0:55–1:20 | `/try`: Someone else. The slip shows WrongPayee and hash `43309EEA…`. Cut to the email memo in `scripts/demo-scenes.ts` | "Here an email tells the agent to pay an attacker. The policy refuses. We sent it with the agent key anyway, and PayGate refused the payee on chain." |
 | 1:20–1:40 | `/try`: Forged, then Same invoice. Hashes `75FF8354…` and `27F14DE4…` | "A stamp from the wrong ML-DSA key: refused. The paid invoice again: refused." |
 | 1:40–2:05 | Ledger step 5, both hashes. `/try` with Queue at 0.025000 | "Over the cap, the agent can only queue. No money moves until the owner approves with ML-DSA. Then it's paid." |
 | 2:05–2:20 | Ledger step 7 | "The owner can pause the gate at once with an ML-DSA signature. It was paused, then unpaused." |
-| 2:20–2:35 | `/gate`: Check the receipt, then the green line | "Every decision the agent makes is a receipt signed with its ML-DSA key. Your browser checks it." |
+| 2:20–2:35 | `/gate`: Check the receipt, then Change one character | "Every decision the agent makes is a receipt signed with its ML-DSA key. Your browser checks it. Change one character of the amount and the signature fails. The file itself is left alone." |
 | 2:35–2:50 | Terminal: `npm run evidence`, ending on "37 passed, 0 failed" | "Every hash here is re-checked on chain. The code, the tests, and what we didn't build are in the README." |

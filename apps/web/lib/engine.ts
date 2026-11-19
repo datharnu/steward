@@ -100,8 +100,8 @@ export function judge(input: {
   if (payee !== "vendor") {
     return still(drawer, {
       state: "refused",
-      code: "WrongPayee",
-      reason: "The payee is not the payout the owner registered for this vendor. This page does not send it. The chain already refused that invoice.",
+      code: "REFUSED_PAYEE_MISMATCH",
+      reason: "The policy returns REFUSED_PAYEE_MISMATCH. PayGate reverts with WrongPayee, because the payee is not the registered payout. This page does not send it. The chain already refused that invoice.",
       mark: "Already tested",
       source: INJECT_HASH,
     });

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Money } from "./ui";
 import { GATE, VENDOR, shortAddress } from "@/lib/engine";
 import { invoiceLabel, readGate, type GateLive } from "@/lib/live";
-import { checkReceipt } from "@/lib/receipt";
+import { checkReceipt, checkTamperedReceipt } from "@/lib/receipt";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -17,8 +17,8 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 export function GatePanel() {
   const [live, setLive] = useState<{ status: "loading" | "error" | "ready"; gate?: GateLive }>({ status: "loading" });
-  const [receipt, setReceipt] = useState<"idle" | "checking" | "ok" | "error">("idle");
-  const [receiptError, setReceiptError] = useState("");
+  const [receipt, setReceipt] = useState<"idle" | "checking" | "ok" | "tampering" | "tampered" | "error">("idle");
+  const [receiptMessage, setReceiptMessage] = useState("");
 
   const load = useCallback(() => {
     setLive({ status: "loading" });
@@ -27,14 +27,30 @@ export function GatePanel() {
       .catch(() => setLive({ status: "error" }));
   }, []);
 
+  const busy = receipt === "checking" || receipt === "tampering";
+
   const verify = useCallback(() => {
     setReceipt("checking");
-    setReceiptError("");
+    setReceiptMessage("");
     checkReceipt()
       .then(() => setReceipt("ok"))
       .catch((error: unknown) => {
         setReceipt("error");
-        setReceiptError(error instanceof Error ? error.message : "The check failed.");
+        setReceiptMessage(error instanceof Error ? error.message : "The check failed.");
+      });
+  }, []);
+
+  const tamper = useCallback(() => {
+    setReceipt("tampering");
+    setReceiptMessage("");
+    checkTamperedReceipt()
+      .then((message) => {
+        setReceipt("tampered");
+        setReceiptMessage(message);
+      })
+      .catch((error: unknown) => {
+        setReceipt("error");
+        setReceiptMessage(error instanceof Error ? error.message : "The check failed.");
       });
   }, []);
 
@@ -108,22 +124,31 @@ export function GatePanel() {
           <h2 className="text-[20px] font-medium">The agent’s receipt</h2>
           <p className="mt-2 text-[15px] text-muted">
             The agent signs a receipt for each decision with its ML-DSA key. This checks the first one in your browser: the
-            hash of its body, and the signature.
+            hash of its body, and the signature. Change one character checks a copy. The file stays as it is.
           </p>
-          <p className={`mt-4 text-[15px] ${receipt === "ok" ? "text-paid" : receipt === "error" ? "text-refused" : "text-muted"}`} aria-live="polite">
+          <p
+            className={`mt-4 text-[15px] ${receipt === "ok" ? "text-paid" : receipt === "tampered" || receipt === "error" ? "text-refused" : "text-muted"}`}
+            aria-live="polite"
+          >
             {receipt === "idle" ? "Not checked yet." : null}
             {receipt === "checking" ? "Checking the signature." : null}
+            {receipt === "tampering" ? "Changing one character." : null}
             {receipt === "ok" ? "The hash matches and the ML-DSA signature checks." : null}
-            {receipt === "error" ? receiptError : null}
+            {receipt === "tampered" || receipt === "error" ? receiptMessage : null}
           </p>
-          <button
-            type="button"
-            className="mt-3 min-h-11 rounded-md bg-brand px-4 text-[15px] text-on-brand disabled:opacity-60"
-            disabled={receipt === "checking"}
-            onClick={verify}
-          >
-            {receipt === "error" ? "Check again" : receipt === "ok" ? "Check again" : "Check the receipt"}
-          </button>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+            <button
+              type="button"
+              className="min-h-11 rounded-md bg-brand px-4 text-[15px] text-on-brand disabled:opacity-60"
+              disabled={busy}
+              onClick={verify}
+            >
+              {receipt === "tampered" ? "Check the real receipt" : receipt === "ok" || receipt === "error" ? "Check again" : "Check the receipt"}
+            </button>
+            <button type="button" className="min-h-11 text-[15px] text-brand disabled:text-muted" disabled={busy} onClick={tamper}>
+              Change one character
+            </button>
+          </div>
         </section>
       </div>
     </main>

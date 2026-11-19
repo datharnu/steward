@@ -199,7 +199,9 @@ export function Desk() {
 
         <aside className="sticky top-6 min-w-0 rounded-lg border border-line bg-surface p-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="font-mono text-[12px] text-muted">{verdict.code}</p>
+            <p className="min-w-0 truncate font-mono text-[12px] text-muted" title={verdict.code}>
+              {verdict.code}
+            </p>
             <p className="font-mono text-[12px] text-muted">{verdict.mark}</p>
           </div>
           <p className={`mt-2 text-[36px] font-medium capitalize ${verdict.state === "paid" ? "text-paid" : verdict.state === "queued" ? "text-queued" : "text-refused"}`}>
@@ -242,7 +244,9 @@ export function Desk() {
           <p className={`text-[20px] font-medium capitalize ${verdict.state === "paid" ? "text-paid" : verdict.state === "queued" ? "text-queued" : "text-refused"}`}>
             {verdict.state}
           </p>
-          <p className="font-mono text-[12px] text-muted">{verdict.code}</p>
+          <p className="min-w-0 truncate font-mono text-[12px] text-muted" title={verdict.code}>
+            {verdict.code}
+          </p>
         </div>
         <p className="text-[14px] text-muted">
           Gate after <Money base={verdict.gateAfter} tone={verdict.state} />

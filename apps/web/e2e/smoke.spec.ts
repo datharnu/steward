@@ -42,6 +42,10 @@ test("the receipt's ML-DSA signature checks in the browser", async ({ page }) =>
   await page.goto("/gate");
   await page.getByRole("button", { name: "Check the receipt" }).click();
   await expect(page.getByText("The hash matches and the ML-DSA signature checks.")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Change one character" }).click();
+  await expect(page.getByText("The ML-DSA signature does not check.")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Check the real receipt" }).click();
+  await expect(page.getByText("The hash matches and the ML-DSA signature checks.")).toBeVisible({ timeout: 20_000 });
   expect(errors.filter((text) => /Content Security Policy|EvalError/.test(text))).toEqual([]);
 });
 
@@ -50,6 +54,7 @@ test("the desk refuses a different payee with the recorded hash", async ({ page 
   await page.getByRole("button", { name: "Try a different invoice" }).click();
   await page.getByRole("button", { name: "Someone else" }).click();
   const slip = page.getByRole("complementary");
+  await expect(slip.getByText("REFUSED_PAYEE_MISMATCH", { exact: true })).toBeVisible();
   await expect(slip.getByText("WrongPayee")).toBeVisible();
   await expect(slip.getByText("43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03")).toBeVisible();
 });

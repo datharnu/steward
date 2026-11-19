@@ -1,0 +1,44 @@
+{
+  "network": "qorechain-diana",
+  "owner": "qor143f0ghn8slqguwez73087dvq8lqnuuukqdu9fl",
+  "ownerEvm": "0xaC52f45E6787c08E3B22f45e7f35803Fc13e7396",
+  "agentKey": "0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be",
+  "payStub": "0x500ccce41a3d219ea7751b89a59bc0248539f734",
+  "transactions": [
+    {
+      "hash": "99E56C9142616508F895382F501447D577F0DA8707D5B291FA5EEB14602CDEAE",
+      "tier": "pqc",
+      "note": "open unscoped window for PayStub deploy"
+    },
+    {
+      "hash": "0xfe6e50a2d27c2834a7130a187335af43be832bb3968a81f45e9e5ac82f0b1fd7",
+      "tier": "classical",
+      "note": "deploy PayStub"
+    },
+    {
+      "hash": "2E95D43ED1B58880799BE0D1311B1B531C62737D282439E737243E2A318B5C72",
+      "tier": "pqc",
+      "note": "close PayStub deploy window"
+    },
+    {
+      "hash": "7319091B553DA90E758C2393F6A2354CD6138EBA5C1A4938BE8F561894CC9CB5",
+      "tier": "pqc",
+      "note": "link steward-agent with PayStub.pay spending rule"
+    },
+    {
+      "hash": "92854431F2D83B45BD7E4D501E7595BC1B1DAF21C300CC7B99E8ECC3D7028789",
+      "tier": "refused",
+      "note": "spike (a): agent key fUSD.transfer refused by spending rule"
+    },
+    {
+      "hash": "F8F7CD24C169D7E443055CD7DE8DED8DFA7F01518019B99DA654CE0282216AFA",
+      "tier": "refused",
+      "note": "spike (b): agent key bank MsgSend refused (no send permission)"
+    },
+    {
+      "hash": "6042BA446BAAC174ED4CEAD7F3D7A9C3C285CD528EA83632FB94CE8FD04B1212",
+      "tier": "pqc",
+      "note": "spike (c): agent key PayStub.pay allowed"
+    }
+  ]
+}

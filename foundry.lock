@@ -1,0 +1,14 @@
+{
+  "lib/forge-std": {
+    "tag": {
+      "name": "v1.17.0",
+      "rev": "f3dae6e6ee381f25eb6a246f7da9b85c91a68219"
+    }
+  },
+  "lib/haven-pq-kit": {
+    "tag": {
+      "name": "v0.1.0",
+      "rev": "9fe7ac289f512e39bce6a2d5e31baeb98195519c"
+    }
+  }
+}

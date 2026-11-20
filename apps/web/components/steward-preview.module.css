@@ -1,0 +1,585 @@
+/* Framed product preview: misty cool backdrop, light desktop app window with stacked sheets peeking behind,
+   container-query scaled (1em = container width / 108) with explicit line-height so zero content is ever clipped. */
+.stage {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.62;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ink-rgb), 0.12);
+  background:
+    radial-gradient(65% 55% at 18% 105%, rgba(30, 64, 72, 0.35), transparent 70%),
+    radial-gradient(60% 50% at 94% 100%, rgba(56, 68, 84, 0.38), transparent 70%),
+    linear-gradient(180deg, #e4e8ec 0%, #d4dbe2 45%, #bcc5cf 100%);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.25;
+  color: #131517;
+  box-shadow: 0 32px 72px -34px rgba(0, 0, 0, 0.65);
+}
+
+@media (max-width: 640px) {
+  .stage {
+    aspect-ratio: 1.02;
+  }
+}
+
+.window,
+.sheet1,
+.sheet2 {
+  font-size: calc(100cqw / 108);
+}
+
+.sheet1,
+.sheet2 {
+  position: absolute;
+  border-radius: 0.65em 0.65em 0 0;
+  background: #f6f5f2;
+  bottom: 0;
+}
+.sheet1 {
+  left: 6%;
+  right: 6.4%;
+  top: 12.5%;
+  box-shadow: 0 1em 3em rgba(0, 0, 0, 0.12);
+  opacity: 0.86;
+}
+.sheet2 {
+  left: 7%;
+  right: 5.2%;
+  top: 17%;
+  opacity: 0.6;
+}
+
+.window {
+  position: absolute;
+  left: 4.5%;
+  right: 7.5%;
+  top: 7.2%;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 3.3em 19.2em minmax(0, 1fr) 19.2em;
+  gap: 0.8em;
+  padding: 1.15em 1.15em 0 0.95em;
+  background: #f6f5f3;
+  border-radius: 0.65em 0.65em 0 0;
+  box-shadow: 0 1.5em 4em rgba(0, 0, 0, 0.2);
+}
+
+.ic {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex: none;
+}
+.dim {
+  color: #84868c;
+}
+.grow {
+  flex: 1 1 auto;
+}
+
+/* Rail */
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95em;
+  padding-top: 0.4em;
+  font-size: 1.12em;
+  color: #5b5f66;
+}
+.logo {
+  display: grid;
+  place-items: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 0.45em;
+  background: #0f1419;
+  color: #ffffff;
+  margin-bottom: 0.3em;
+}
+.railBtn {
+  display: grid;
+  place-items: center;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: 0.4em;
+}
+.railOn {
+  background: #16171a;
+  color: #fff;
+}
+.railBottom {
+  margin-top: auto;
+  margin-bottom: 0.9em;
+}
+
+/* Left list: invoices & refusals */
+.list {
+  background: #fff;
+  border-radius: 0.45em 0.45em 0 0;
+  padding: 1em 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  min-width: 0;
+}
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1em;
+  padding: 0 0.15em;
+  margin-bottom: 0.55em;
+}
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5em;
+  height: 1.35em;
+  margin-left: 0.35em;
+  padding: 0 0.35em;
+  border-radius: 999px;
+  background: #f1f1f3;
+  color: #6b6f76;
+  font-size: 0.68em;
+  font-weight: 500;
+  vertical-align: 0.12em;
+}
+.chips {
+  display: flex;
+  gap: 0.45em;
+  margin-bottom: 0.55em;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.35em 0.6em;
+  border-radius: 0.35em;
+  background: #f2f2f3;
+  font-size: 0.76em;
+  color: #333;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  margin-bottom: 0.45em;
+}
+.groupLabel {
+  font-size: 0.62em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8d93;
+  padding: 0.35em 0.45em 0.2em;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1.85em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.42em 0.48em;
+  border-radius: 0.45em;
+}
+.rowOn {
+  background: #f3f2ef;
+}
+.rowIcon {
+  display: grid;
+  place-items: center;
+  width: 1.85em;
+  height: 1.85em;
+  border-radius: 0.4em;
+  background: #f0f0f1;
+  color: #444;
+  font-size: 0.88em;
+}
+.rowOn .rowIcon {
+  background: #fff;
+  box-shadow: 0 0 0 0.08em #e3e3e6;
+  color: #0d9488;
+}
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14em;
+  min-width: 0;
+}
+.rowName {
+  font-size: 0.82em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rowSub {
+  font-size: 0.67em;
+  color: #6b6f76;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+  font-size: 0.62em;
+  color: #5b5f66;
+  white-space: nowrap;
+}
+.stDot {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 999px;
+}
+.stPaid {
+  color: #15803d;
+}
+.stPaid .stDot {
+  background: #16a34a;
+  box-shadow: 0 0 0 0.2em rgba(22, 163, 74, 0.2);
+}
+.stRefused {
+  color: #b91c1c;
+}
+.stRefused .stDot {
+  background: #dc2626;
+}
+.stQueued {
+  color: #4f46e5;
+}
+.stQueued .stDot {
+  background: #6366f1;
+}
+
+/* Center: PayGate execution graph */
+.main {
+  background: #fff;
+  border-radius: 0.45em 0.45em 0 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+.mainHead {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.8em 1em;
+  border-bottom: 0.08em solid #ececef;
+}
+.mainTitle {
+  font-size: 0.96em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tag {
+  font-size: 0.72em;
+  font-weight: 600;
+  padding: 0.22em 0.6em;
+  border-radius: 999px;
+  background: #e6f7f5;
+  color: #0f766e;
+  white-space: nowrap;
+}
+.btnGhost,
+.btnDark {
+  font-size: 0.74em;
+  padding: 0.38em 0.78em;
+  border-radius: 0.38em;
+  white-space: nowrap;
+}
+.btnGhost {
+  border: 0.1em solid #dcdde1;
+  color: #222;
+  background: #fff;
+}
+.btnDark {
+  background: #16171a;
+  color: #fff;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.55em 1em;
+  border-bottom: 0.08em solid #ececef;
+  font-size: 0.76em;
+  color: #6b6f76;
+}
+.btnSmall {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32em;
+  padding: 0.28em 0.6em;
+  border-radius: 0.32em;
+  border: 0.1em solid #dcdde1;
+  color: #222;
+}
+.sep {
+  width: 0.08em;
+  height: 1.15em;
+  background: #e3e3e6;
+}
+.metaLive {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.canvas {
+  position: relative;
+  flex: 1 1 auto;
+  background-color: #f8f8f9;
+  background-image: radial-gradient(#e0e1e6 0.08em, transparent 0.09em);
+  background-size: 1.1em 1.1em;
+}
+.wireH {
+  position: absolute;
+  height: 0.1em;
+  background: #cfd1d6;
+}
+.wireV {
+  position: absolute;
+  width: 0.1em;
+  background: #cfd1d6;
+  transform: translateX(-50%);
+}
+.dashed {
+  background: repeating-linear-gradient(90deg, #cfd1d6 0 0.35em, transparent 0.35em 0.6em);
+}
+
+.node {
+  position: absolute;
+  width: 26%;
+  min-height: 7.4em;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 0.08em solid #e3e4e8;
+  border-radius: 0.4em;
+  box-shadow: 0 0.15em 0.4em rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+.nodeHead {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.44em 0.6em;
+  font-size: 0.76em;
+  border-bottom: 0.08em solid #f0f0f2;
+}
+.nodeIcon {
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 0.32em;
+  background: #f3f3f4;
+  color: #444;
+}
+.nodeNum {
+  font-weight: 600;
+}
+.nodeState {
+  margin-left: auto;
+  color: #16a34a;
+  display: grid;
+  place-items: center;
+}
+.nodeBody {
+  padding: 0.46em 0.65em 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.16em;
+  flex: 1 1 auto;
+}
+.nodeTitle {
+  font-size: 0.76em;
+  font-weight: 600;
+}
+.nodeSub {
+  font-size: 0.68em;
+  color: #5b5f66;
+  line-height: 1.28;
+}
+.nodeFoot {
+  padding: 0.38em 0.65em;
+  background: #fafafb;
+  border-top: 0.08em solid #f0f0f2;
+  font-size: 0.66em;
+  color: #6b6f76;
+}
+.nodeRefused .nodeState {
+  color: #dc2626;
+}
+.nodeRefused .nodeSub {
+  color: #b91c1c;
+}
+
+.caps {
+  position: absolute;
+  width: 26%;
+  background: #fff;
+  border: 0.08em dashed #cfd1d6;
+  border-radius: 0.4em;
+  padding: 0.55em 0.65em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+.capsHead {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: 0.72em;
+  font-weight: 600;
+  margin-bottom: 0.1em;
+}
+.capRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35em;
+  font-size: 0.65em;
+  color: #5b5f66;
+  white-space: nowrap;
+}
+.capRow code {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.94em;
+  color: #111;
+}
+.capsFoot {
+  margin-top: 0.16em;
+  padding-top: 0.36em;
+  border-top: 0.08em solid #f0f0f2;
+  font-size: 0.62em;
+  color: #0d9488;
+}
+
+/* Right: Receipt & Activity */
+.side {
+  background: #fff;
+  border-radius: 0.45em 0.45em 0 0;
+  padding: 0.95em 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  min-width: 0;
+}
+.sideHead {
+  display: flex;
+  align-items: center;
+  gap: 0.48em;
+  font-size: 0.94em;
+  margin-bottom: 0.2em;
+}
+.sideHead b {
+  flex: 1 1 auto;
+}
+.sideMark {
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 0.35em;
+  background: #0f1419;
+  color: #2dd4bf;
+  font-size: 0.9em;
+}
+.insight {
+  display: flex;
+  gap: 0.6em;
+  padding: 0.62em;
+  border: 0.08em solid #ececef;
+  border-radius: 0.45em;
+}
+.insightIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 0.36em;
+  font-size: 0.84em;
+}
+.refuse {
+  background: #fef2f2;
+  color: #dc2626;
+}
+.warn {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+.ok {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+.insightBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  min-width: 0;
+}
+.insightTitle {
+  font-size: 0.78em;
+  font-weight: 600;
+}
+.insightText {
+  font-size: 0.67em;
+  color: #5b5f66;
+  line-height: 1.32;
+}
+.insightHash {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.63em;
+  color: #16171a;
+  margin-top: 0.1em;
+}
+.label {
+  font-size: 0.62em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6f76;
+  margin-top: 0.35em;
+}
+.event {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.45em;
+  font-size: 0.7em;
+  padding: 0.14em 0.1em;
+}
+.ago {
+  color: #8a8d93;
+  white-space: nowrap;
+}
+
+/* Narrow phone: collapse to the PayGate canvas at larger scale with full vertical room */
+@container (max-width: 560px) {
+  .window,
+  .sheet1,
+  .sheet2 {
+    font-size: calc(100cqw / 54);
+  }
+  .sheet1,
+  .sheet2 {
+    display: none;
+  }
+  .window {
+    left: 3%;
+    right: 3%;
+    top: 4%;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.85em 0.85em 0;
+  }
+  .rail,
+  .list,
+  .side,
+  .toolbar .dim:last-child,
+  .btnGhost,
+  .tag {
+    display: none;
+  }
+}

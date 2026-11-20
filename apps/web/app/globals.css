@@ -1,46 +1,77 @@
-/* Identity: a pay slot. Owner is copper, vendor is blue, agent is stone.
-   Paid, queued and refused are status colours, never brand. */
+/* Identity: Post-Quantum Accounts-Payable Vault.
+   Cool obsidian surfaces + crisp Quantum Teal brand accent.
+   Paid (emerald), queued (indigo), and refused (rose) are status colours. */
 
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #16130f;
-  --color-surface: #221c16;
-  --color-ink: #f3ecdf;
-  --color-muted: #a89884;
-  --color-line: #3a322a;
-  --color-brand: #c46a3a;
-  --color-on-brand: #1a100a;
-  --color-vendor: #6ea4c4;
-  --color-agent: #8a8176;
-  --color-paid: #6fbf8d;
-  --color-queued: #b7a4d6;
-  --color-refused: #e08a7e;
-  --text-body: 1.0625rem;
+  --color-canvas: #090b0e;
+  --color-surface: #111418;
+  --color-surface-elevated: #181c22;
+  --color-ink: #f3f6fa;
+  --color-muted: #8e99a8;
+  --color-line: #212730;
+  --color-line-strong: #313946;
+  --color-brand: #2dd4bf;
+  --color-brand-soft: rgba(45, 212, 191, 0.13);
+  --color-on-brand: #041a18;
+  --color-vendor: #38bdf8;
+  --color-agent: #8e99a8;
+  --color-paid: #34d399;
+  --color-paid-soft: rgba(52, 211, 153, 0.12);
+  --color-queued: #818cf8;
+  --color-queued-soft: rgba(129, 140, 248, 0.13);
+  --color-refused: #fb7185;
+  --color-refused-soft: rgba(251, 113, 133, 0.12);
+  --text-body: 1rem;
   --leading-body: 1.55;
 }
 
+:root {
+  --ink-rgb: 243, 246, 250;
+  --brand-rgb: 45, 212, 191;
+  --hairline: rgba(255, 255, 255, 0.08);
+  --h1-sheen-a: #ffffff;
+  --h1-sheen-b: #b8c4d4;
+  color-scheme: dark;
+}
+
 html[data-theme="light"] {
-  --color-canvas: #f6f1e8;
-  --color-surface: #fffdf8;
-  --color-ink: #1c1612;
-  --color-muted: #6e6256;
-  --color-line: #e4d9cc;
-  --color-brand: #a24e28;
-  --color-on-brand: #fff8f2;
-  --color-vendor: #2a5670;
-  --color-agent: #6b6258;
-  --color-paid: #1f6b42;
-  --color-queued: #5a4a78;
-  --color-refused: #9d3428;
+  --color-canvas: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #eaeff4;
+  --color-ink: #0f1419;
+  --color-muted: #5b6573;
+  --color-line: #e1e6ec;
+  --color-line-strong: #cbd3dd;
+  --color-brand: #0d9488;
+  --color-brand-soft: rgba(13, 148, 136, 0.1);
+  --color-on-brand: #ffffff;
+  --color-vendor: #0284c7;
+  --color-agent: #5b6573;
+  --color-paid: #059669;
+  --color-paid-soft: rgba(5, 150, 105, 0.1);
+  --color-queued: #4f46e5;
+  --color-queued-soft: rgba(79, 70, 229, 0.1);
+  --color-refused: #e11d48;
+  --color-refused-soft: rgba(225, 29, 72, 0.1);
+  --ink-rgb: 15, 20, 25;
+  --brand-rgb: 13, 148, 136;
+  --hairline: rgba(15, 20, 25, 0.1);
+  --h1-sheen-a: #0f1419;
+  --h1-sheen-b: #536070;
+  color-scheme: light;
 }
 
 html {
   background: var(--color-canvas);
   color: var(--color-ink);
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   font-size: var(--text-body);
   line-height: var(--leading-body);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -48,6 +79,83 @@ body {
   min-height: 100vh;
   background: var(--color-canvas);
   color: var(--color-ink);
+  overflow-x: clip;
+}
+
+/* Subtle atmospheric backdrop */
+.steward-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 72% 42% at 50% -10%, rgba(var(--brand-rgb), 0.11), transparent 72%),
+    radial-gradient(ellipse 38% 30% at 86% 14%, rgba(56, 189, 248, 0.05), transparent 65%);
+}
+
+.steward-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(var(--color-line-strong) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.25;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 88%);
+}
+
+/* Dotted app canvas background (used in /gate, /try, /vendor workspaces) */
+.steward-canvas-dots {
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(rgba(var(--ink-rgb), 0.11) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Woven hatched stage surface */
+.steward-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
+  background: linear-gradient(135deg, #0d1014 0%, #141920 46%, #0b0e12 100%);
+}
+
+.steward-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 6px);
+  mask-image: linear-gradient(160deg, #000 0%, rgba(0, 0, 0, 0.45) 42%, #000 74%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.steward-stage::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(150deg, transparent 38%, rgba(255, 255, 255, 0.055) 46%, transparent 52%),
+    radial-gradient(45% 40% at 85% 10%, rgba(45, 212, 191, 0.08), transparent 70%);
+}
+
+html[data-theme="light"] .steward-stage {
+  background: linear-gradient(135deg, #eaedf1 0%, #dfe4ea 50%, #edf0f4 100%);
+}
+
+html[data-theme="light"] .steward-stage::before {
+  background:
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0 1px, transparent 1px 6px);
+}
+
+html[data-theme="light"] .steward-stage::after {
+  background: linear-gradient(150deg, transparent 38%, rgba(255, 255, 255, 0.6) 46%, transparent 52%);
 }
 
 ::selection {
@@ -55,8 +163,56 @@ body {
   color: var(--color-on-brand);
 }
 
+/* Custom sleek range slider */
 input[type="range"] {
-  accent-color: var(--color-brand);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]:disabled {
+  cursor: not-allowed;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line-strong);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  border: 2px solid var(--color-canvas);
+  box-shadow: 0 0 0 1px var(--color-brand), 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+input[type="range"]:not(:disabled):hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 3px var(--color-brand-soft), 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-line-strong);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--color-brand);
+  border: 2px solid var(--color-canvas);
+  box-shadow: 0 0 0 1px var(--color-brand), 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: transform 150ms ease;
 }
 
 :focus-visible {
@@ -67,29 +223,52 @@ input[type="range"] {
 .word {
   font-family: var(--font-serif), serif;
   font-style: italic;
-  font-weight: 450;
+  font-weight: 400;
+  color: var(--color-brand);
 }
 
 .font-mono {
   font-family: var(--font-mono), ui-monospace, monospace;
 }
 
+/* Smooth page entrance */
 .rise {
-  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes rise {
   from {
     opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.75;
+  }
+  70% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: pulse-ring 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 320ms;
+  animation-duration: 300ms;
 }
 
 ::view-transition-new(root) {
@@ -108,6 +287,7 @@ input[type="range"] {
 
 @media (prefers-reduced-motion: reduce) {
   .rise,
+  .pulse-ring,
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
@@ -116,20 +296,5 @@ input[type="range"] {
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
-  }
-}
-
-@media (max-width: 809px) {
-  .app-side {
-    display: none;
-  }
-  .app-tabs {
-    display: flex;
-  }
-}
-
-@media (min-width: 810px) {
-  .app-tabs {
-    display: none;
   }
 }

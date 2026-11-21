@@ -37,7 +37,7 @@ Open http://localhost:3000. `/` is the rule and the seven steps. `/gate` reads P
 
 The site is the Next.js app in `apps/web`. It has no environment variables and it holds no key. Vercel builds it with the project's root directory set to `apps/web`. The install is `npm ci` and the build is `npm run build`. Leave both as the framework defaults. Do not set a root `vercel.json`. The security headers in `apps/web/next.config.ts` are the ones the production server sends. `connect-src` allows `https://evm-testnet.qore.host`. The recorded pay is read through one same-origin rewrite, `/qore-rest/cosmos/tx/v1beta1/txs/:hash`, to `https://api-testnet.qore.host`.
 
-The public copy is https://steward-amber.vercel.app. Opened on 21 November 2026, before this pay check was deployed. **Check the receipt** on `/gate` passed at 390px and at 1440px. The live read showed 0.008862 fUSD held, and the gate was open. Horizontal overflow was 0 at 390px on `/`, `/gate`, `/try`, and `/vendor`, and at 1440px on `/` and `/gate`. **Check this payment** was checked on localhost the same day.
+The public copy is https://steward-amber.vercel.app. Opened on 21 November 2026. **Check the receipt** and **Check this payment** on `/gate` both passed at 390px and at 1440px. The pay check matched the vendor's ML-DSA-87 signature. The live read showed 0.008862 fUSD held, and the gate was open. Horizontal overflow on that check was 0 at 390px and at 1440px.
 
 The agent link deployed with this repo expires at Unix time 1795169194, which is 20 November 2026, 11:06 UTC+1. After that the project agent cannot send a new transaction until the owner runs `npm run link`. The recorded hashes, `npm run evidence`, the tests, and the site do not need a live link. A new payment does.
 
@@ -239,7 +239,7 @@ npm run smoke    # Playwright, on a production build
 - PayGate on testnet, with one vendor.
 - Seven recorded steps: a real payment, an injected payee, a forged stamp, a replay, an over-cap queue then an owner approval, a direct token call refused, and a pause then an unpause.
 - A spending rule that allows two selectors and no denoms.
-- A public site at https://steward-amber.vercel.app. Opened on 21 November 2026, it read the gate and checked the agent's receipt. **Check this payment** is in the site from this commit. Token, amount, vendor, payee, then the signature, then the caps.
+- A public site at https://steward-amber.vercel.app. On 21 November 2026 it read the gate, checked the agent's receipt, and checked the recorded pay. Token, amount, vendor, payee, then the signature, then the caps.
 - Foundry tests, Vitest, a CBOM check, and `npm run evidence`.
 
 Not claimed:

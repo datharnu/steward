@@ -1,7 +1,7 @@
 import { GATE, PAID_INVOICE_KEY, VENDOR } from "./engine";
 
 const RPC = "https://evm-testnet.qore.host";
-const FUSD = "0x97143B771D34ddb9130b807b135Ae675A5a963CA";
+export const FUSD = "0x97143B771D34ddb9130b807b135Ae675A5a963CA";
 
 const SELECTOR = {
   balanceOf: "0x70a08231",

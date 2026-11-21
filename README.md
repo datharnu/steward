@@ -4,7 +4,7 @@
 
 Track: Post-Quantum AI Agents, [Build Before Q-Day](https://build.qorechain.io/). Repository: https://github.com/datharnu/steward. Licence: Apache-2.0.
 
-Network `qorechain-diana`, EVM chain id 9800. PayGate holds test fUSD. Nothing here is on mainnet, and nothing here has been through the dashboard audit. The site reads the chain and sends no transaction. It is not deployed to a public URL.
+Network `qorechain-diana`, EVM chain id 9800. PayGate holds test fUSD. Nothing here is on mainnet, and nothing here has been through the dashboard audit. The site reads the chain and sends no transaction. The public copy is https://steward-amber.vercel.app.
 
 Steward proves who was paid and that the vendor signed. It does not prove the work was done.
 
@@ -31,9 +31,23 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. `/` is the rule and the seven steps. `/gate` reads PayGate live and checks the agent's receipt in the browser. `/try` shows each refusal and its hash. `/vendor` signs with a key made in the tab. That key is not saved and not registered. PayGate refuses a file it signs.
+Open http://localhost:3000. `/` is the rule and the seven steps. `/gate` reads PayGate live, checks the agent's receipt in the browser, and can check the recorded pay in PayGate's order: token, amount, vendor, payee, invoice id, then the vendor's ML-DSA-87 signature, then the caps. The caps are not checked before the signature. `/try` shows each refusal and its hash. `/vendor` signs with a key made in the tab. That key is not saved and not registered. PayGate refuses a file it signs.
 
-The agent link deployed with this repo expires at Unix time 1795169194, which is 20 November 2026, 11:06 UTC+1. After that the agent cannot send a new transaction until the owner runs `npm run link`. The recorded hashes, `npm run evidence`, the tests, and the site do not need a live link. A new payment does.
+## On the web
+
+The site is the Next.js app in `apps/web`. It has no environment variables and it holds no key. Vercel builds it with the project's root directory set to `apps/web`. The install is `npm ci` and the build is `npm run build`. Leave both as the framework defaults. Do not set a root `vercel.json`. The security headers in `apps/web/next.config.ts` are the ones the production server sends. `connect-src` allows `https://evm-testnet.qore.host`. The recorded pay is read through one same-origin rewrite, `/qore-rest/cosmos/tx/v1beta1/txs/:hash`, to `https://api-testnet.qore.host`.
+
+The public copy is https://steward-amber.vercel.app. Opened on 21 November 2026, before this pay check was deployed. **Check the receipt** on `/gate` passed at 390px and at 1440px. The live read showed 0.008862 fUSD held, and the gate was open. Horizontal overflow was 0 at 390px on `/`, `/gate`, `/try`, and `/vendor`, and at 1440px on `/` and `/gate`. **Check this payment** was checked on localhost the same day.
+
+The agent link deployed with this repo expires at Unix time 1795169194, which is 20 November 2026, 11:06 UTC+1. After that the project agent cannot send a new transaction until the owner runs `npm run link`. The recorded hashes, `npm run evidence`, the tests, and the site do not need a live link. A new payment does.
+
+## Live through judging
+
+The recorded hashes stay valid. They do not expire.
+
+A guest link is created fresh in the judge's browser for that visit. That page is not built yet. It will not call `setAgent` on the recorded PayGate, and it will not use the project agent key.
+
+The project authenticator is not on a renewal calendar. A link lasts 24 hours, and this repository will not run `npm run link` unless a person asks for that command. PayGate still names the recorded agent account until Unix time 1797682327 (19 December 2026).
 
 ## What was measured
 
@@ -225,16 +239,15 @@ npm run smoke    # Playwright, on a production build
 - PayGate on testnet, with one vendor.
 - Seven recorded steps: a real payment, an injected payee, a forged stamp, a replay, an over-cap queue then an owner approval, a direct token call refused, and a pause then an unpause.
 - A spending rule that allows two selectors and no denoms.
-- A local site that reads the gate and checks a receipt in the browser.
+- A public site at https://steward-amber.vercel.app. Opened on 21 November 2026, it read the gate and checked the agent's receipt. **Check this payment** is in the site from this commit. Token, amount, vendor, payee, then the signature, then the caps.
 - Foundry tests, Vitest, a CBOM check, and `npm run evidence`.
 
 Not claimed:
 
-- A public URL.
 - A film file. The shot list is in `docs/DEMO.md`.
 - A second vendor.
 - Courier as the inbox. The adapter is a placeholder. Courier is a separate project.
-- A live agent after 20 November 2026, 11:06 UTC, until `npm run link`.
+- A live project agent after 20 November 2026, 11:06 UTC. `npm run link` is not on the judging calendar. See [Live through judging](#live-through-judging).
 - A dashboard audit.
 - Explorer links in the site. The site shows hashes with a Copy button.
 

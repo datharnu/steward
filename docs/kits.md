@@ -9,7 +9,7 @@ Every version is pinned exactly in `package.json` and `apps/web/package.json`.
 | `@qorechain/sdk` | 0.14.0 | The unified eth-native account and `EthNativeSigner`. ML-DSA sign. Window, link and spending-rule messages. `fetchAuthNonce`, `evmAuthSignBytesV2` and `MsgExecuteEVM` for the agent key. The swap on pool 2 |
 | `@qorechain/pqc` | 0.2.3 | ML-DSA-87 and ML-KEM-1024 underneath the SDK and QoreSeal |
 | `@qorechain/qoreseal` | 0.1.0 | Seals the owner's mandate to the agent's ML-KEM-1024 key |
-| `@qorechain/qoresign` | 0.1.0 | Signs the mandate. Sign In With QoreChain for the local pause and resume. `pqVerify` for receipts, in Node and in the browser. Key generation and signing for the vendor page |
+| `@qorechain/qoresign` | 0.1.0 | Signs the mandate. Sign In With QoreChain for the local pause and resume. `pqVerify` for receipts and for the vendor signature on the recorded pay, in Node and in the browser. Key generation and signing for the vendor page |
 | `@qorechain/mcp` | 0.1.1 | `get_transaction` and `get_pq_status`, called in-process by `npm run evidence` and `npm run audit` |
 | `@qorechain/qore-cli` | 0.1.1 | Installed for manual checks (`npx qore`). The scripts use MCP |
 | `@qorechain/qorescan` | 0.1.0 | The CycloneDX CBOM (`npm run cbom`) and the data behind `npm run cbom:check` |
@@ -20,7 +20,7 @@ Every version is pinned exactly in `package.json` and `apps/web/package.json`.
 
 | Package | Version | Job here |
 | --- | --- | --- |
-| `viem` | 2.47.6 | ABI encoding that matches Solidity, the EVM client, and the owner's EVM-lane transactions |
+| `viem` | 2.47.6 | ABI encoding that matches Solidity, the EVM client, and the owner's EVM-lane transactions. The site uses the same 2.47.6 to decode the recorded `pay` call |
 | `@cosmjs/stargate` | 0.39.0 | Broadcast transport for `EthNativeSigner` |
 | `@noble/hashes` | 2.4.0 | keccak-256 for the receipt hash and the invoice bytes in the browser |
 | `forge-std` | v1.17.0 | Foundry test helpers |

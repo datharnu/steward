@@ -31,6 +31,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/qore-rest/cosmos/tx/v1beta1/txs/:hash",
+        destination: "https://api-testnet.qore.host/cosmos/tx/v1beta1/txs/:hash",
+      },
+    ];
+  },
   async redirects() {
     return [
       { source: "/live", destination: "/gate", permanent: false },

@@ -22,6 +22,7 @@ import { WorkspaceShell } from "./workspace-shell";
 import { GATE, VENDOR, shortAddress } from "@/lib/engine";
 import { invoiceLabel, readGate, type GateLive } from "@/lib/live";
 import { checkReceipt, checkTamperedReceipt } from "@/lib/receipt";
+import { PayCheck } from "./pay-check";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -353,6 +354,7 @@ export function GatePanel() {
       inspector={inspector}
     >
       <div className="space-y-5">
+        <PayCheck />
         {live.status === "error" ? (
           <div className="flex items-center gap-2.5 rounded-xl border border-refused/40 bg-refused-soft px-4 py-3 text-[13.5px] text-refused">
             <ShieldAlert className="h-4 w-4 shrink-0" />

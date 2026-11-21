@@ -27,14 +27,16 @@ for (const width of WIDTHS) {
 test("the homepage lists the seven testnet steps", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("main ol").last().locator(":scope > li")).toHaveCount(7);
-  await expect(page.getByText("3DEB1D5B87", { exact: false })).toBeVisible();
+  await expect(page.getByText("3DEB1D5B87", { exact: false }).first()).toBeVisible();
 });
 
 test("the gate page shows a live read or says it could not read", async ({ page }) => {
   await page.goto("/gate");
-  await expect(page.getByText(/fUSD held/)).toBeVisible();
+  await expect(page.getByText(/fUSD held/).first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Read again|Reading/ })).toBeVisible();
   await expect(page.getByText(/Couldn’t read the gate|^\d+\.\d{6}$/).first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("button", { name: "Check this payment" })).toBeVisible();
+  await expect(page.getByText("The recorded pay has not been checked.")).toBeVisible();
 });
 
 test("the receipt's ML-DSA signature checks in the browser", async ({ page }) => {

@@ -11,7 +11,7 @@ A prompt-injected invoice memo tells the AI clerk to send `0.001000 fUSD` (1,000
 [Demo video (2:52)](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view) · [Live demo](https://steward-amber.vercel.app) · [Judge in 5 minutes](#judge-it-in-5-minutes) · [Run locally](#run-locally) · [What works today](#what-works-today)
 
 <p align="center">
-  <a href="https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view"><img src="docs/screen-home.png" width="880" alt="Watch the Steward demo" /></a>
+  <a href="https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view"><img src="docs/video-cover.jpg" width="880" alt="Watch the Steward demo" /></a>
   <br />
   <sub><a href="https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view">▶ Watch demo (2:52)</a></sub>
 </p>

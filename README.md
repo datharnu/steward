@@ -8,7 +8,11 @@ Built for teams letting an autonomous agent handle accounts payable on QoreChain
 
 A prompt-injected invoice memo tells the AI clerk to send `0.001000 fUSD` (1,000 base units) to an attacker's address (`0x…00a1`). Steward's off-chain policy refuses it, and when the agent key tries to send it on chain anyway, `PayGate` reverts before checking the signature — **0.000000 fUSD moved**, while a legitimate vendor-signed invoice pays `0.010000 fUSD` once and blocks replay.
 
-[Live demo](https://steward-amber.vercel.app) · [Judge in 5 minutes](#judge-it-in-5-minutes) · [Run locally](#run-locally) · [What works today](#what-works-today)
+[Demo video (2:52)](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view) · [Live demo](https://steward-amber.vercel.app) · [Judge in 5 minutes](#judge-it-in-5-minutes) · [Run locally](#run-locally) · [What works today](#what-works-today)
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view"><img src="docs/video-thumb.jpg" width="720" alt="Steward demo video (2:52): click to watch on Google Drive" /></a>
+</p>
 
 <p align="center">
   <a href="https://steward-amber.vercel.app"><img src="docs/screen-home.png" width="880" alt="Steward home screen showing 'An AI clerk pays your invoices. It cannot be talked into paying anyone else' and the recorded PayGate refusal of a direct fUSD.transfer." /></a>
@@ -184,7 +188,7 @@ Built for **Build Before Q-Day** (`https://build.qorechain.io/`), category bount
 | **Smart-account spending rules** | Linked in `E1796894…8F6AC9E4`: `1 uqor`/tx, `1 uqor`/day, 0 denoms, only `PayGate.pay` and `PayGate.queue`; refused direct `fUSD.transfer` (`92854431…`) and bank send (`F8F7CD24…`). | Session renewed on 23 Nov 2026 (`CAD63319…`) until `16 Dec 2026 23:59 UTC`; after that the owner runs `npm run link` again. |
 | **Authenticated messaging** | Vendor ML-DSA-87 invoice signatures verified on chain via `pqcVerify` (`3DEB1D5B…`), wrong key refused (`75FF8354…`), mandate signed/sealed with QoreSign + QoreSeal, hash-chained ML-DSA agent receipts. | Invoices arrive as signed JSON files, or from a Courier drop directory through `CourierInboxAdapter`. The adapter is tested with a Courier-signed invoice, not yet run against a live Courier relay. |
 | **Public GitHub repository under MIT or Apache-2.0** | `https://github.com/datharnu/steward`, Apache-2.0 (`LICENSE`). | No QCAI dashboard audit (not required for Post-Quantum AI Agents). |
-| **README, testnet addresses, and video (up to 3 min)** | This single-file `README.md` holds all addresses and hashes; shot list (2:50) in `docs/DEMO.md`. | **Film not recorded yet.** Must be recorded and linked before 2 December 2026. |
+| **README, testnet addresses, and video (up to 3 min)** | This single-file `README.md` holds all addresses and hashes; shot list (2:50) in `docs/DEMO.md`. | [Demo video](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view) (2:52). Motion-graphics explainer built from the recorded evidence, with synthetic narration (ElevenLabs); not a screen recording of a live session. |
 
 ---
 
@@ -284,7 +288,7 @@ Live scripts (`npm run deploy`, `npm run link`, `npm run fund`, `npm run cli`, `
 
 ## Roadmap
 
-1. **Before 2 December 2026:** Record and publish the ≤3-minute demo film (`docs/DEMO.md`), featuring the three-model injection run and the on-chain refusal.
+1. **Done (23 November 2026):** [demo video](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view) (2:52), featuring the three-model injection run and the on-chain refusal.
 2. **Multi-vendor & live Courier inbox:** Feed `CourierInboxAdapter` from a live Courier device, skip invoices already paid through `MemoPay`, and support multiple onboarded vendors.
 3. **External audit & mainnet:** Audit `PayGate` and spending-rule integration before mainnet deployment.
 
@@ -307,6 +311,8 @@ Built during **Build Before Q-Day** (November 2026; deadline 2 December 2026 at 
 ## AI disclosure
 
 Written in a Cursor agent session (Claude) under human direction, with the human approving every network transaction, faucet claim, repository creation, and push; later README restructuring used Antigravity. Human decisions included the single PayGate invariant, running the spending-rule spike first, dropping a template homepage in favor of a custom product layout, funding and completing steps 5 and 7 rather than leaving them unrun, and finishing CI/docs before moving to Courier. Bugs caught and fixed included handling missing `abstractaccount_execution` events by reading on-chain invoice state, rerunning refusals with the standard fee after a 135,000 uqor under-gas failure, and fixing a mobile verdict bar animation transform.
+
+The demo video (23 November 2026) was built in Remotion with Claude Code (Claude Opus 5.5) from this README's recorded evidence, and the human reviewed and approved every script. Its narration is a synthetic ElevenLabs voice; the background track is Mixkit's "Vastness".
 
 ---
 

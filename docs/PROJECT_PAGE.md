@@ -6,7 +6,7 @@ Paste-ready text for the project page. Every address and hash below is copied fr
 
 An AI clerk pays your vendor invoices on QoreChain, and it cannot be talked into paying anyone else. A real LLM reads each invoice and proposes pay, queue, skip or flag. It is allowed to be wrong: a deterministic policy checks every proposal, the agent's key can only call `PayGate.pay` or `PayGate.queue` (QoreChain's smart-account spending rule blocks direct token transfers), and `PayGate` pays only a vendor's registered payout, only with that vendor's fresh ML-DSA-87 invoice signature, within per-invoice and daily caps. On Diana testnet (23 November 2026) we fed the same prompt-injected invoice to three models: Claude Opus 5.5 and NVIDIA Nemotron caught it, a 1.7B model was fooled, and `PayGate` still moved 0 fUSD on chain. Claude and Nemotron each then planned and paid a real vendor invoice.
 
-Live demo: https://steward-amber.vercel.app (try `/gate`, no wallet) · Code: https://github.com/datharnu/steward (Apache-2.0)
+Video (2:52): https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view · Live demo: https://steward-amber.vercel.app (try `/gate`, no wallet) · Code: https://github.com/datharnu/steward (Apache-2.0)
 
 ## Contracts and accounts (`qorechain-diana`, EVM chain ID 9800)
 

@@ -1,196 +1,178 @@
 # Steward
 
-**The agent key cannot move funds. The only payment the chain will let it make is a vendor-signed invoice, through the gate, to a vendor the owner approved, once, inside the caps.**
+**Steward lets an AI agent pay approved vendor invoices while blocking direct transfers and redirected payouts.**
 
-Track: Post-Quantum AI Agents, [Build Before Q-Day](https://build.qorechain.io/). Repository: https://github.com/datharnu/steward. Licence: Apache-2.0.
+Built for teams letting an autonomous agent handle accounts payable on QoreChain. Funds sit in `PayGate`, the agent's smart-account key can only call `pay` or `queue` on `PayGate` (never the token directly), and every payout requires a fresh ML-DSA-87 invoice signature from an owner-approved vendor inside per-invoice and daily caps.
 
-Network `qorechain-diana`, EVM chain id 9800. PayGate holds test fUSD. Nothing here is on mainnet, and nothing here has been through the dashboard audit. The site reads the chain and sends no transaction. The public copy is https://steward-amber.vercel.app.
+A prompt-injected invoice memo tells the AI clerk to send `0.01 fUSD` to an attacker's address (`0x…00a1`). Steward's off-chain policy refuses it, and when the agent key tries to send it on chain anyway, `PayGate` reverts before checking the signature — **0.000000 fUSD moved**, while a legitimate vendor-signed invoice pays `0.010000 fUSD` once and blocks replay.
 
-Steward proves who was paid and that the vendor signed. It does not prove the work was done.
+[Live demo](https://steward-amber.vercel.app) · [Watch the film (up to 3 min — not recorded yet)](#built-during-the-hackathon) · [Judge in 5 minutes](#judge-it-in-5-minutes) · [Run locally](#run-locally) · [What works today](#what-works-today)
 
-## Judge it without our keys
+<p align="center">
+  <a href="https://steward-amber.vercel.app"><img src="docs/screen-home.png" width="880" alt="Steward home screen showing 'An AI clerk pays your invoices. It cannot be talked into paying anyone else' and the recorded PayGate refusal of a direct fUSD.transfer." /></a>
+</p>
 
-1. Read the seven rows in [What was measured](#what-was-measured). Each refusal was built so that PayGate's first failing check is the one named there.
-2. Re-check the hashes. No key:
-
-```bash
-git clone --recurse-submodules https://github.com/datharnu/steward
-cd steward
-npm ci
-npm run evidence
-```
-
-`npm run evidence` reads `deployments/*.json` and checks each hash on `qorechain-diana` through `@qorechain/mcp`. The shot list in [docs/DEMO.md](docs/DEMO.md) expected the line `37 passed, 0 failed`. Re-run the command. The number on a later day is the one that counts.
-
-3. `forge test` and `npm run test:ts` need no chain. They use a mock of the precompiles. A passing test is not a testnet receipt.
-4. The site, still with no key:
-
-```bash
-cd apps/web
-npm ci
-npm run dev
-```
-
-Open http://localhost:3000. `/` is the rule and the seven steps. `/gate` reads PayGate live, checks the agent's receipt in the browser, and can check the recorded pay in PayGate's order: token, amount, vendor, payee, invoice id, then the vendor's ML-DSA-87 signature, then the caps. The caps are not checked before the signature. `/try` shows each refusal and its hash. `/vendor` signs with a key made in the tab. That key is not saved and not registered. PayGate refuses a file it signs.
-
-## On the web
-
-The site is the Next.js app in `apps/web`. It has no environment variables and it holds no key. Vercel builds it with the project's root directory set to `apps/web`. The install is `npm ci` and the build is `npm run build`. Leave both as the framework defaults. Do not set a root `vercel.json`. The security headers in `apps/web/next.config.ts` are the ones the production server sends. `connect-src` allows `https://evm-testnet.qore.host`. The recorded pay is read through one same-origin rewrite, `/qore-rest/cosmos/tx/v1beta1/txs/:hash`, to `https://api-testnet.qore.host`.
-
-The public copy is https://steward-amber.vercel.app. Opened on 21 November 2026. **Check the receipt** and **Check this payment** on `/gate` both passed at 390px and at 1440px. The pay check matched the vendor's ML-DSA-87 signature. The live read showed 0.008862 fUSD held, and the gate was open. Horizontal overflow on that check was 0 at 390px and at 1440px.
-
-The agent link deployed with this repo expires at Unix time 1795169194, which is 20 November 2026, 11:06 UTC+1. After that the project agent cannot send a new transaction until the owner runs `npm run link`. The recorded hashes, `npm run evidence`, the tests, and the site do not need a live link. A new payment does.
-
-## Live through judging
-
-The recorded hashes stay valid. They do not expire.
-
-A guest link is created fresh in the judge's browser for that visit. That page is not built yet. It will not call `setAgent` on the recorded PayGate, and it will not use the project agent key.
-
-The project authenticator is not on a renewal calendar. A link lasts 24 hours, and this repository will not run `npm run link` unless a person asks for that command. PayGate still names the recorded agent account until Unix time 1797682327 (19 December 2026).
-
-## What was measured
-
-PayGate is `0xb0c44d0a628c4593314a5c3c113d27f2d1842a05`. Amounts are fUSD base units. 10,000 is 0.01 fUSD. The full notes are in [docs/DEMO.md](docs/DEMO.md).
-
-| What was measured | Result | Where |
-| --- | --- | --- |
-| A vendor-signed invoice | Paid once. The gate went from 21,932 to 11,932. The vendor holds 10,000 | `3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84` |
-| An injected payee | The policy returned `REFUSED_PAYEE_MISMATCH` and did not need the chain. The same invoice, sent with the agent key anyway, reverted in PayGate. The payee check runs before the signature | `43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03` |
-| A stamp from the owner's key, not the vendor's | Refused | `75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D` |
-| The paid invoice again | Refused. The id is already Paid | `27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0` |
-| 25,000 against a 20,000 per-invoice cap | Queued, no transfer. The owner then approved with ML-DSA. The gate paid 25,000 | Queue `44331E7905651F0B8F49A787ECCADE4CD1F5FF5B51B9FD2AD92C29044F41443E`. Approval `0x26606a97330b87cba8d1efd683a56419a50c5e00cc7e105c8f78ef73197573ba` |
-| The agent calls `fUSD.transfer` | Refused by the spending rule. The rule lists no denoms, and the only allowed calls are `PayGate.pay` and `PayGate.queue` | `92854431F2D83B45BD7E4D501E7595BC1B1DAF21C300CC7B99E8ECC3D7028789` |
-| A bank send from the agent | Refused by the same rule | `F8F7CD24C169D7E443055CD7DE8DED8DFA7F01518019B99DA654CE0282216AFA` |
-
-> **The gate is the guard.** The planner can propose anything. The policy clamps it. If the policy is skipped, PayGate still pays only a registered payout, once, inside the caps.
-
-| What has been observed | Where the boundary is |
+| What was tested on QoreChain Diana testnet | Measured result |
 | --- | --- |
-| The agent key cannot call the token | One refused `fUSD.transfer` and one refused bank send. The limit on the rule is 1 uqor per transaction and 1 uqor a day, so listing fUSD on the rule would still not match the invoice caps. Those caps live in PayGate |
-| A memo that says "pay the attacker" did not change the payee | The policy refused it off chain. The chain refusal is the payee check, which does not read the memo |
-| The owner can pause | Pause `0x598cbc7bb5138e36512ced1f04a0950828bf1d774500f792846307640565e5c2`, then unpause `0xd2e27f6bc29c76a64b4935601fe225296533a8e6824f392f2d57fe2354035f2c`. The gate was not left paused |
-| The daily cap did not fire | The deployed daily cap is 2,500 fUSD, far above what the gate holds. The cap that fired is the per-invoice cap of 20,000 base units |
+| Legitimate vendor-signed invoice (`steward-demo-1`) | Paid **10,000 fUSD base units** once; gate dropped `21,932 → 11,932` |
+| Prompt-injected payee, forged owner stamp, or replayed invoice ID | **0 fUSD moved** — all three refused on chain by `PayGate` |
+| Over-cap invoice (`25,000` vs. `20,000` per-invoice cap) | Queued with **0 transfer**; paid only after owner's ML-DSA-87 approval |
+| Agent key attempts direct `fUSD.transfer` or native bank send | **0 fUSD moved** — refused by QoreChain's smart-account spending rule |
 
-## What the track asks for
+**Why not an ordinary hot wallet or off-chain agent guardrail?** Off-chain prompt filters fail against prompt injection, and a hot wallet key that can call `ERC20.transfer` can drain the treasury in one call. Steward enforces the boundary on chain at two layers: QoreChain's spending rule blocks token transfers outright, and `PayGate` verifies ML-DSA-87 vendor signatures, registered payouts, caps, and single-use invoice IDs.
 
-The category requirements on the [Prizes](https://build.qorechain.io/prizes) page are a scoped EVM window, transaction, value, duration and target limits, a smart-account spending rule, and authenticated messaging. The jury's point weights are not published.
+**What is the biggest risk?** A stolen vendor ML-DSA-87 key can still sign invoices to that vendor's own registered payout up to the configured caps until the owner pauses `PayGate`. Also, Steward proves who was paid and that the vendor signed — it does not prove the billed work was actually delivered — and the deployed project agent session expired on 20 November 2026 (recorded hashes remain verifiable; new live agent sends require `npm run link`).
 
-| Requirement | Where it holds | Limit |
-| --- | --- | --- |
-| Scoped EVM window | The owner opens a hybrid-signed window for one transaction, aimed at PayGate only, with a value cap. The approval, the pause, and the unpause each ran in one | Open `02889290D115C1EEF5E4F98B2D3E00C4A3E8AE87013FE86D1E426C550EB90BE9`, approve `0x26606a97330b87cba8d1efd683a56419a50c5e00cc7e105c8f78ef73197573ba`, close `BA58A6DFC12349E430A1EC18B742C26A4B5AE581955729A5F06CB2E38EDAE060` |
-| Transaction limit | An invoice id can be paid once | Replay `27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0` |
-| Value limit | A vendor has a per-invoice cap. The daily cap is deployed and is not what stopped the demo | 25,000 queued against 20,000, `44331E7905651F0B8F49A787ECCADE4CD1F5FF5B51B9FD2AD92C29044F41443E` |
-| Duration limit | The agent link expires. Registry changes wait a timelock. Owner signatures have a deadline | The current link expires at Unix time 1795169194. Executing early is `forge test --match-test test_execute_refusesBeforeTheDelay`. An expired agent is `test_pay_refusesAnExpiredAgent`. The vendor was proposed in `0xc256f81ea8e04778ddc2d6e038af7e75e02d0903ee4a301e015a6299a6ba829d` and added after the delay in `0xa9db709361f1f40b5a5aa61f4e5c09497b8089947337db919b6e013410677395` |
-| Target limit | The payee has to be that vendor's registered payout | `43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03` |
-| Spending rule | 1 uqor per transaction, 1 uqor a day, no denoms, and only `pay` and `queue` on PayGate | Linked in `E1796894B9AAF23D653758FB10E65BCE14968A8DBBEF4E127C3E95FB8F6AC9E4` |
-| Authenticated messaging | The vendor's ML-DSA-87 signature is checked on chain with `pqcVerify`. The owner's ML-DSA-87 signature covers approval, pause, and registry changes. The mandate is sealed to the agent. Each decision has a signed receipt | Paid `3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84`. A stamp from the wrong key `75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D` |
+**How can a judge try it right now?** Open [steward-amber.vercel.app/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment** to verify the vendor's ML-DSA-87 signature and live `PayGate` state in the browser with no wallet, or clone the repo and run `npm run evidence` (37 checks, 0 keys).
+
+---
 
 ## Contents
 
 1. [The problem](#the-problem)
-2. [The rule](#the-rule)
-3. [How a payment is decided](#how-a-payment-is-decided)
-4. [What this does not claim](#what-this-does-not-claim)
-5. [Addresses](#addresses)
-6. [Evidence](#evidence)
-7. [Decisions](#decisions)
-8. [Stack](#stack)
-9. [Getting started](#getting-started)
-10. [Repo map](#repo-map)
-11. [What works today](#what-works-today)
-12. [Credits](#credits)
+2. [How it works](#how-it-works)
+3. [Hardest technical decision](#hardest-technical-decision)
+4. [Judge it in 5 minutes](#judge-it-in-5-minutes)
+5. [Where each attack or failure stops](#where-each-attack-or-failure-stops)
+6. [Rubric and track mapping](#rubric-and-track-mapping)
+7. [What works today](#what-works-today)
+8. [Known limits](#known-limits)
+9. [Run locally](#run-locally)
+10. [Repository map](#repository-map)
+11. [Roadmap](#roadmap)
+12. [Traction](#traction)
+13. [Built during the hackathon](#built-during-the-hackathon)
+14. [AI disclosure](#ai-disclosure)
+15. [Evidence: testnet addresses](#evidence-testnet-addresses)
+16. [Evidence: seven recorded testnet steps](#evidence-seven-recorded-testnet-steps)
+17. [Evidence: design decisions and cost breakdown](#evidence-design-decisions-and-cost-breakdown)
+
+---
 
 ## The problem
 
-A business wants an agent to pay invoices. The agent reads email. Email can tell it to pay someone else. A stolen agent key, including a classical key that a quantum computer can forge, should not be a second treasurer.
+**76%** of US organizations experienced attempted or actual payments fraud in 2025, with **74%** targeted by business email compromise ([AFP Payments Fraud and Control Survey, Apr 2026](https://www.financialprofessionals.org/about/learn-more/press-releases/Details/over-75-percent-of-us-firms-experienced-payments-fraud-in-2025-while-ai-adoption-for-fraud-mitigation-lags)), and OWASP warns that *"it is unclear if there are fool-proof methods of prevention for prompt injection"* ([OWASP LLM01:2025](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)).
 
-The money sits in a contract. The agent's chain key is allowed to call two functions on that contract, and nothing else. The contract pays a vendor-signed invoice to that vendor's registered payout, once.
+When an AI agent reads vendor invoices from an inbox, an attacker can inject instructions directly into the memo field. If the agent holds a general-purpose wallet key, one fooled prompt drains the account. Steward moves funds into `PayGate` and restricts the agent's chain key to calling `PayGate.pay` and `PayGate.queue` only — so a fooled planner can propose anything, and the chain still refuses every unauthorized payout.
 
-No business is using this. The runs below are testnet.
+---
 
-## The rule
+## How it works
 
-> **PayGate pays a registered payout, for an unused invoice id, inside the caps, when the vendor's current ML-DSA-87 key signed the invoice. The agent key cannot call the token.**
+```mermaid
+flowchart LR
+    V[Approved Vendor] -->|ML-DSA-87 signed invoice| P[AI Planner + Deterministic Policy]
+    O[Owner] -->|QoreSign + QoreSeal mandate| P
+    P -->|pay or queue only| SR[QoreChain Spending Rule: 1 uqor, 0 denoms]
+    SR -->|allowed selectors only| PG[PayGate on QoreChain]
+    PG -->|pqcVerify + caps + unused ID| V
+    PG -->|over cap -> queue| O
+    O -->|ML-DSA-87 approve / pause| PG
+```
 
-- **Chain rule.** The agent key is linked to the owner's account. The spending rule allows `PayGate.pay` and `PayGate.queue` only. The limit is 1 uqor per transaction and 1 uqor a day. The rule lists no denoms. Listing the token there would let the key transfer it up to that tiny cap, so the invoice caps live in PayGate instead.
-- **PayGate** (`src/PayGate.sol`). The payee must be the vendor's registered payout. The id must be unused. The amount must be inside the per-invoice cap and the daily cap. The vendor's signature is checked with `pqcVerify` against the key `pqcKeyStatus` returns now. An invoice over the cap can only be queued. The owner releases it with an ML-DSA signature. Registry and cap changes need the owner's ML-DSA signature and a timelock. Pause is immediate. `withdraw` goes only to the owner and waits for the timelock.
-- **Mandate** (`src/ts/mandate.ts`). The owner's budget, vendor list, and expiry. It is signed with QoreSign and sealed to the agent with QoreSeal. Unsigned, expired, replayed, or another agent's mandates are refused with stable codes.
-- **Policy** (`src/ts/policy.ts`). The planner proposes. A deterministic clamp decides. Invoice text is data, never instructions. The planner is Claude through Anthropic or OpenRouter, with a rule-based fallback when no model key is set.
+- **QoreChain smart-account spending rule:** The agent key (`0x9C3876…FEB7E6be`) is linked to the owner's account with a 1 uqor per-tx / 1 uqor daily cap, **zero allowed denoms**, and only two allowed selectors (`PayGate.pay` and `PayGate.queue`). Direct `fUSD.transfer` and native bank sends are rejected by the chain before touching `PayGate`.
+- **`PayGate` (`src/PayGate.sol`):** Holds the fUSD treasury. Checks in strict order: token → amount → approved vendor → vendor's registered payout → unused invoice ID → vendor's current ML-DSA-87 signature (`pqcVerify` against `pqcKeyStatus`) → per-invoice and daily caps. Over-cap invoices can only be queued until the owner approves with ML-DSA-87. Registry/cap changes and `withdraw` (to owner only) wait a timelock; `pause` is immediate.
+- **Sealed mandate & deterministic policy:** The owner signs and seals the budget, vendor list, and expiry to the agent via QoreSign + QoreSeal (`src/ts/mandate.ts`). The LLM planner (Claude via Anthropic/OpenRouter, with rule-based fallback) only proposes; `src/ts/policy.ts` clamps deterministically and treats invoice text strictly as data.
+- **Signed agent receipts:** Every decision is logged in a hash-chained, ML-DSA-signed receipt store (`agent/receipt-store.ts`), cross-checked against chain transactions by `npm run audit`.
 
-The agent signs a hash-chained receipt for each decision with its ML-DSA key (`agent/receipt-store.ts`). `npm run audit` checks every receipt's transaction on chain. A receipt proves what the agent signed. It does not prove the agent was right.
+---
 
-## How a payment is decided
+## Hardest technical decision
 
-1. A vendor signs an invoice with ML-DSA-87. The payee is that vendor's registered payout.
-2. The planner reads the invoice. The policy either refuses it, queues it, or asks the executor to pay it.
-3. The executor submits `pay` or `queue` with the agent key. The relayer pays gas. The relayer's address grants nothing.
-4. PayGate checks the token, the vendor, the payout, and the unused id, then the vendor's signature. `pay` checks the per-invoice cap and the daily cap after that. The payee check runs before the signature. The comment on `_checkInvoice` says the signature is last among the checks it shares with `queue`.
-5. The agent writes a receipt. `npm run audit` reads it back against the chain.
+**Keeping invoice caps inside `PayGate` and listing zero denoms on QoreChain's spending rule.**
 
-`scripts/demo-scenes.ts` sends the injected payee, the forged stamp, and the replay, and refuses to continue if any of them succeeds. `scripts/finish-demo.ts` sends the over-cap approval and the pause. Both need the keys in `~/.haven`.
+QoreChain's smart-account spending rule requires a bounded value limit in `uqor`. If we had listed `fUSD` as an allowed denom on the spending rule, the agent key could have called `fUSD.transfer` directly up to that limit without an invoice signature. Leaving the denom list empty and setting the rule cap to `1 uqor` means the chain rejects every direct token transfer and bank send outright, while `PayGate` enforces the real per-invoice (`0.020000 fUSD`) and daily (`2,500 fUSD`) caps.
 
-## What this does not claim
+---
 
-| Claim we do not make | What is true instead |
-| --- | --- |
-| The work was done | The receipt and the vendor signature say who was paid and who signed. They do not say the invoice was honest |
-| A stolen vendor key is harmless | The thief can sign invoices to that vendor's own payout, up to the caps. The owner's remedy is to pause or revoke. See [THREAT_MODEL.md](THREAT_MODEL.md) |
-| The daily cap protected the demo | It is 2,500 fUSD. The gate holds far less. The per-invoice cap of 0.020000 fUSD is the one that fired |
-| The browser vendor is onboarded | `/vendor` makes a key in the tab, does not save it, and does not register it. PayGate refuses what it signs |
-| Courier delivers the invoices | Invoices arrive as signed JSON files. `CourierInboxAdapter` is still a placeholder. Courier is a separate repository |
-| The agent can pay today without a new link | The authenticator expired at Unix time 1795169194. PayGate itself keeps the agent until Unix time 1797682327 (19 December 2026). The chain session is what blocks a new transaction |
-| A public site | `apps/web` runs on localhost. It needs no secrets. It has not been deployed |
-| An audit | No dashboard audit has been run on PayGate. The Foundry tests and the seven receipts are the review that exists |
+## Judge it in 5 minutes
 
-## Addresses
+Everything below runs on QoreChain Diana (`qorechain-diana`, EVM chain ID `9800`) using test fUSD. The deployed project agent session expired on 20 November 2026 (recorded hashes, browser checks, and `npm run evidence` do not need a live session; see [Known limits](#known-limits)).
 
-| What | Address |
-| --- | --- |
-| PayGate | `0xb0c44d0a628c4593314a5c3c113d27f2d1842a05` |
-| fUSD, ERC-20, 6 decimals | `0x97143B771D34ddb9130b807b135Ae675A5a963CA` |
-| Owner | `qor143f0ghn8slqguwez73087dvq8lqnuuukqdu9fl` / `0xaC52f45E6787c08E3B22f45e7f35803Fc13e7396` |
-| Agent key, linked to the owner, EVM calls only | `0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be` |
-| Vendor | `qor17zwvy05e9fzerfzksdkhygm92wvapwusvh4zfv` / `0xf09cc23e992A4591A456836D7223655399D0BB90` |
-| PayStub, a spike target, no longer allowed | `0x500ccce41a3d219ea7751b89a59bc0248539f734` |
-| Precompiles | `pqcVerify` `0x…0a01`, `pqcKeyStatus` `0x…0a02` |
+1. **Browser live gate & ML-DSA-87 signature check (no wallet, no setup).**
+   Open [steward-amber.vercel.app/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment** (verifies token, amount, vendor, payee, invoice ID, ML-DSA-87 signature, and caps in PayGate's exact order). Visit `/try` to inspect every refusal and `/vendor` to test signing with an unregistered browser key that `PayGate` refuses.
+2. **One-command hash verification from a clone (no keys).**
+   ```bash
+   git clone --recurse-submodules https://github.com/datharnu/steward
+   cd steward
+   npm ci
+   npm run evidence
+   ```
+   Checks every recorded transaction in `deployments/*.json` via `@qorechain/mcp` (expected: **37 passed, 0 failed**).
+3. **Offline contract, agent, and cryptography tests (no chain, no keys).**
+   ```bash
+   forge test
+   npm run test:ts
+   npm run cbom:check
+   ```
+   Includes `test_lyingVerify_stillCannotRedirect`, `test_execute_refusesBeforeTheDelay`, and `test_pay_refusesAnExpiredAgent`.
 
-One vendor is deployed. The per-invoice cap is 0.020000 fUSD. The daily cap is 2,500 fUSD.
+---
 
-## Evidence
+## Where each attack or failure stops
 
-| Step | What happened | Hash |
+- **Prompt-injected memo tells agent to pay attacker `0x…00a1`:** stopped off chain by `REFUSED_PAYEE_MISMATCH` in `policy.ts`, and if sent anyway, reverted on chain by `PayGate`'s payee check before signature verification.
+- **Invoice stamped with owner's key instead of vendor's key:** reverted on chain by `PayGate` at `pqcVerify`.
+- **Replayed invoice ID (`steward-demo-1` submitted twice):** reverted on chain (`Paid` status check).
+- **Over-cap invoice (`25,000` vs. `20,000` per-invoice cap):** cannot call `pay`; queued with 0 transfer until owner signs ML-DSA-87 approval inside a scoped EVM window.
+- **Compromised agent key calls `fUSD.transfer` directly:** refused by QoreChain's smart-account spending rule (0 denoms, only `PayGate.pay` / `PayGate.queue` allowed).
+- **Compromised agent key attempts native bank send:** refused by the same spending rule.
+- **Compromised precompile returns `true` for a bad recipient (`test_lyingVerify_stillCannotRedirect`):** still cannot redirect because `PayGate` only pays the vendor's registered payout.
+- **Stolen vendor key:** owner triggers immediate `pause` with ML-DSA-87; payout registry changes require a timelock (`60s` on testnet).
+- **Expired agent session or expired mandate:** refused by QoreChain session expiry and `PayGate` agent expiry.
+
+---
+
+## Rubric and track mapping
+
+Built for **Build Before Q-Day** (`https://build.qorechain.io/`), category bounty **Post-Quantum AI Agents** ("Build an autonomous agent with spending and access limits enforced on chain"; example projects include *bill payer, treasury assistant*). Deadline: **2 December 2026 at 23:59 UTC**.
+
+| Requirement (exact hackathon wording) | Where Steward proves it | Honest limit |
 | --- | --- | --- |
-| 1 | Vendor-signed invoice `steward-demo-1`, 10,000, paid once | `3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84` |
-| 2 | Memo told the agent to pay `0x…00a1`. Policy refused. The chain then refused the payee | `43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03` |
-| 3 | Real vendor, real payout, signed with the owner's ML-DSA key | `75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D` |
-| 4 | Invoice from step 1 submitted again | `27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0` |
-| 5 | 25,000 queued, then the owner approved | Queue `44331E7905651F0B8F49A787ECCADE4CD1F5FF5B51B9FD2AD92C29044F41443E`. Approval `0x26606a97330b87cba8d1efd683a56419a50c5e00cc7e105c8f78ef73197573ba` |
-| 6 | Agent calls `fUSD.transfer` | `92854431F2D83B45BD7E4D501E7595BC1B1DAF21C300CC7B99E8ECC3D7028789` |
-| 7 | Owner pauses, then unpauses | Pause `0x598cbc7bb5138e36512ced1f04a0950828bf1d774500f792846307640565e5c2`. Unpause `0xd2e27f6bc29c76a64b4935601fe225296533a8e6824f392f2d57fe2354035f2c` |
+| **Scoped EVM window** | Owner's approval (`0x26606a…7573ba`), pause (`0x598cbc…65e5c2`), and unpause (`0xd2e27f…4035f2c`) each ran in a hybrid-signed window aimed solely at `PayGate` with a value cap. | Window is opened by owner's ML-DSA-87 key; `PayGate` does not open windows. |
+| **Transaction, value, duration and target limits** | **Transaction:** invoice ID paid once (`27F14DE4…3D731BC0`). **Value:** `25,000` queued against `20,000` per-invoice cap (`44331E79…4F41443E`). **Duration:** agent session expiry (`1795169194`), 60s registry timelock (`0xc256f8…` → `0xa9db70…`), signature deadlines. **Target:** registered vendor payout only (`43309EEA…9255B03`). | The `2,500 fUSD` daily cap is deployed but did not fire because `PayGate` holds less; the per-invoice cap is what fired on testnet. |
+| **Smart-account spending rules** | Linked in `E1796894…8F6AC9E4`: `1 uqor`/tx, `1 uqor`/day, 0 denoms, only `PayGate.pay` and `PayGate.queue`; refused direct `fUSD.transfer` (`92854431…`) and bank send (`F8F7CD24…`). | Project agent session expired `20 Nov 2026 11:06 UTC+1` (24-hour session); new live sends need `npm run link`. |
+| **Authenticated messaging** | Vendor ML-DSA-87 invoice signatures verified on chain via `pqcVerify` (`3DEB1D5B…`), wrong key refused (`75FF8354…`), mandate signed/sealed with QoreSign + QoreSeal, hash-chained ML-DSA agent receipts. | Invoices arrive as signed JSON files; `CourierInboxAdapter` is a placeholder (Courier is a separate repo). |
+| **Public GitHub repository under MIT or Apache-2.0** | `https://github.com/datharnu/steward`, Apache-2.0 (`LICENSE`). | No QCAI dashboard audit (not required for Post-Quantum AI Agents). |
+| **README, testnet addresses, and video (up to 3 min)** | This single-file `README.md` holds all addresses and hashes; shot list (2:50) in `docs/DEMO.md`. | **Film not recorded yet.** Must be recorded and linked before 2 December 2026. |
 
-The chain's event for a reverted agent call says `execution reverted: evm transaction execution failed`. It does not include the Solidity error name. The scene scripts choose inputs so the first failing check is the one in the table.
+---
 
-A film shot list, 2 minutes 50 seconds, is in [docs/DEMO.md](docs/DEMO.md). The film file is not in this repository.
+## What works today
 
-`npm run audit` checks the agent's receipts against those transactions. It is a different command from `npm run evidence`.
+### Observed
 
-## Decisions
+- **`PayGate` deployed on `qorechain-diana`** (`0xb0c44d0a628c4593314a5c3c113d27f2d1842a05`) with one registered vendor (`0.020000 fUSD` per-invoice cap, `2,500 fUSD` daily cap, 60s timelock).
+- **Seven recorded testnet steps:** legitimate payment (`10,000`), injected payee refused, wrong-key stamp refused, replay refused, over-cap `25,000` queued then owner-approved, direct `fUSD.transfer` and bank send refused by spending rule, and owner pause + unpause.
+- **Live web app (`https://steward-amber.vercel.app`):** Verified on 21 Nov 2026 at 390px and 1440px — **Check the receipt** and **Check this payment** on `/gate` passed, live read showed `0.008862 fUSD` held and gate open, 0 horizontal overflow.
+- **Automated checks:** Foundry unit + invariant tests, Vitest agent/vector tests, `npm run cbom:check`, `npm run audit`, and `npm run evidence` (37 checks).
 
-| Decision | Why |
-| --- | --- |
-| Invoice caps live in PayGate, not on the spending rule | The spending rule's value limit is in uqor. Putting fUSD on it would let the agent transfer the token up to 1 uqor. The rule lists no denoms, and the token call is refused outright |
-| The relayer has no authority | It submits. It cannot change the invoice, the payee, or the amount. Being `msg.sender` grants nothing |
-| A lying precompile still cannot redirect | `test_lyingVerify_stillCannotRedirect` forces the mock verifier to return true. The payee check still pays only a registered payout |
-| Timelock on registry changes, immediate pause | A payout change can wait. A stolen vendor key should stop now. The testnet timelock is 60 seconds |
-| One vendor in the deploy | Enough to show the rule. A second vendor is a registry change, which the owner can make, and which was not part of the seven steps |
-| The site does not send transactions | A guest key in the browser would need test QOR before it could act. Reading the chain is the judge path |
+### Built, not observed
 
-## Stack
+- **Daily cap trigger on testnet:** Enforced in `PayGate` and Foundry tests, not triggered in the live demo because treasury balance was below `2,500 fUSD`.
+- **Guest browser link flow:** Planned design, not built yet; `/gate` and `/try` are read-only verification views.
 
-Solidity on Foundry. TypeScript on Node 22. viem. `@qorechain/sdk` 0.14.0, `pqc` 0.2.3, `qoreseal` 0.1.0, `qoresign` 0.1.0, `mcp` 0.1.1, `evm` 0.14.0, `qore-cli` 0.1.1. haven-pq-kit v0.1.0. The site is Next.js, React, and Tailwind. Playwright smoke covers 390, 768, and 1280 px. Fonts are Familjen Grotesk, Newsreader, and Fragment Mono, through Fontsource, under the SIL Open Font License.
+### Deliberately absent
 
-## Getting started
+- **Courier live inbox integration:** `CourierInboxAdapter` is a placeholder; invoices are signed JSON files.
+- **Proof of work completion:** Steward proves who was paid and that the vendor signed, not that the billed service was delivered.
+- **QCAI dashboard audit & explorer deep links:** No dashboard audit; web UI provides a Copy button for hashes instead of unconfirmed explorer URLs.
+
+---
+
+## Known limits
+
+- **Stolen vendor key:** Can sign invoices to that vendor's own registered payout up to caps until the owner pauses `PayGate` or removes the vendor.
+- **24-hour agent session expiry:** The linked project authenticator expired `20 Nov 2026 11:06 UTC+1` (Unix `1795169194`). `PayGate` keeps the agent registered until `19 Dec 2026` (`1797682327`), and all recorded hashes + browser checks stay valid forever, but new live agent sends require the owner to run `npm run link`.
+- **Single deployed vendor:** One vendor is onboarded in the recorded deploy; adding more uses the timelocked owner registry flow.
+- **Opaque revert strings on reverted agent calls:** QoreChain emits `execution reverted: evm transaction execution failed` without Solidity error names on reverted `MsgExecuteEVM` calls; demo inputs isolate each check so the first failing guard is unambiguous.
+- **Testnet only:** `PayGate` holds test fUSD with no monetary value.
+
+---
+
+## Run locally
+
+Prerequisites: **Node 22** and **Foundry** (`forge`).
 
 ```bash
 git clone --recurse-submodules https://github.com/datharnu/steward
@@ -200,66 +182,110 @@ forge test
 npm run test:ts
 npm run typecheck
 npm run cbom:check
-npm run evidence
+npm run evidence      # re-checks all 37 recorded testnet hashes (no keys)
 ```
 
-`npm run cbom:check` fails the build if a contract reaches ML-DSA other than through the two precompiles, or if it uses `ecrecover`.
-
-The site:
+Web app (`http://localhost:3000`):
 
 ```bash
 cd apps/web
 npm ci
-npm run dev      # http://localhost:3000
-npm run smoke    # Playwright, on a production build
+npm run dev
+npm run smoke         # Playwright smoke across 390, 768, and 1280 px
 ```
 
-`npm run deploy`, `npm run link`, `npm run fund`, `npm run cli`, `npx tsx scripts/demo-scenes.ts`, and `npx tsx scripts/finish-demo.ts` read keys from `~/.haven/<name>.env`, mode 0600. Those files are not in the repository.
+Live scripts (`npm run deploy`, `npm run link`, `npm run fund`, `npm run cli`, `scripts/demo-scenes.ts`, `scripts/finish-demo.ts`) require `~/.haven/<name>.env` keys (never committed).
 
-## Repo map
+---
 
-| Path | What it is |
+## Repository map
+
+| Path | Responsibility |
 | --- | --- |
-| `src/PayGate.sol` | Holds the fUSD. Pays a vendor-signed invoice. Queues, pauses, and withdraws under the owner's ML-DSA signature |
-| `src/ts/mandate.ts` | The sealed budget |
-| `src/ts/policy.ts` | The clamp. Invoice text is data |
-| `agent/` | The executor and the receipt store |
-| `apps/web` | Read-only site. `/`, `/gate`, `/try`, `/vendor` |
-| `scripts/` | Deploy, link, fund, the seven steps, evidence, the receipt audit, the CBOM check |
-| `deployments/` | The hashes `npm run evidence` reads |
-| `test/` | Foundry, including the payee, expiry, timelock, and lying-verifier tests |
-| `docs/DEMO.md` | The seven steps and the film shot list |
-| `docs/spikes.md` | What the testnet run actually did |
-| `docs/kits.md` | Which QoreChain kit does which job |
-| `THREAT_MODEL.md` | Who the rule stops, and who it does not |
-| `AI_USAGE.md` | What was generated, and what a person decided |
+| `src/PayGate.sol` | Holds fUSD; verifies vendor ML-DSA-87 invoices, caps, single-use IDs, queue/approve, timelocked registry/withdraw, immediate pause |
+| `src/ts/mandate.ts` | QoreSign + QoreSeal sealed owner budget mandate |
+| `src/ts/policy.ts` | Deterministic clamp treating invoice text strictly as data |
+| `agent/` | Executor and ML-DSA hash-chained receipt store |
+| `apps/web/` | Read-only Next.js verifier: `/` (rule & 7 steps), `/gate` (live gate & receipt check), `/try` (refusals), `/vendor` (ephemeral key test) |
+| `scripts/` | Deploy, link, fund, 7 demo steps, `evidence.ts` (37 checks), `audit`, `cbom.ts` |
+| `deployments/` | Recorded testnet JSON hashes read by `npm run evidence` |
+| `test/` & `test-ts/` | Foundry unit/invariant tests (including lying verifier, timelock, expiry) and Vitest agent/vector tests |
 
-## What works today
+---
 
-- PayGate on testnet, with one vendor.
-- Seven recorded steps: a real payment, an injected payee, a forged stamp, a replay, an over-cap queue then an owner approval, a direct token call refused, and a pause then an unpause.
-- A spending rule that allows two selectors and no denoms.
-- A public site at https://steward-amber.vercel.app. On 21 November 2026 it read the gate, checked the agent's receipt, and checked the recorded pay. Token, amount, vendor, payee, then the signature, then the caps.
-- Foundry tests, Vitest, a CBOM check, and `npm run evidence`.
+## Roadmap
 
-Not claimed:
+1. **Before 2 December 2026:** Record and publish the ≤3-minute demo film (`docs/DEMO.md`).
+2. **Multi-vendor & live Courier inbox:** Connect `CourierInboxAdapter` to receive encrypted invoices from Courier and support multiple onboarded vendors.
+3. **External audit & mainnet:** Audit `PayGate` and spending-rule integration before mainnet deployment.
 
-- A film file. The shot list is in `docs/DEMO.md`.
-- A second vendor.
-- Courier as the inbox. The adapter is a placeholder. Courier is a separate project.
-- A live project agent after 20 November 2026, 11:06 UTC. `npm run link` is not on the judging calendar. See [Live through judging](#live-through-judging).
-- A dashboard audit.
-- Explorer links in the site. The site shows hashes with a Copy button.
+---
 
-## Credits
+## Traction
 
-Written during the fest, November 2026. It builds on:
+No external users or customers yet; all runs are our own testnet proofs on `qorechain-diana` — pilot next.
 
-- **QoreChain kits:** `@qorechain/sdk`, `@qorechain/pqc`, `@qorechain/qoreseal`, `@qorechain/qoresign`, `@qorechain/mcp`, `@qorechain/qore-cli`, `@qorechain/qorescan`, and `@qorechain/evm`. What each does here is in [docs/kits.md](docs/kits.md).
-- **haven-pq-kit v0.1.0:** https://github.com/datharnu/haven-pq-kit. The `PqAuth` and `PqQuorum` interface follows the public design of [qore-pq-kit](https://github.com/Adityaakr/qore-pq-kit) by Adityaakr, Apache-2.0. The implementation, tests, `VendorSig`, and recipient-card checks were written for Haven.
-- **Meter:** a sealed payment line on NEAR. The rule was kept: a signed invoice, a fixed payee, a cap, and no second payment. The code was written again for QoreChain, ML-DSA-87, and PayGate.
-- **Other libraries:** viem, `@cosmjs/stargate`, `@noble/hashes`, forge-std, Vitest, tsx, Next.js, React, Tailwind CSS, and Playwright.
+---
 
-## Licence
+## Built during the hackathon
 
-Apache-2.0. See [LICENSE](LICENSE).
+Built during **Build Before Q-Day** (November 2026; deadline 2 December 2026 at 23:59 UTC). First commit: `0b25e55` on **19 November 2026**. Licence: **Apache-2.0** (`LICENSE`).
+
+**Credits:** `@qorechain/sdk` 0.14.0, `@qorechain/pqc` 0.2.3, `@qorechain/qoreseal` 0.1.0, `@qorechain/qoresign` 0.1.0, `@qorechain/mcp` 0.1.1, `@qorechain/qore-cli` 0.1.1, `@qorechain/qorescan` 0.1.0, `@qorechain/evm` 0.14.0; `haven-pq-kit` v0.1.0 (interface following `qore-pq-kit` by Adityaakr, Apache-2.0); rule lineage from the author's earlier NEAR project Meter (written fresh for QoreChain/ML-DSA-87); viem, `@cosmjs/stargate`, `@noble/hashes`, `forge-std`, Vitest, Next.js, React, Tailwind CSS, Playwright.
+
+---
+
+## AI disclosure
+
+Written in a Cursor agent session (Claude) under human direction, with the human approving every network transaction, faucet claim, repository creation, and push; later README restructuring used Antigravity. Human decisions included the single PayGate invariant, running the spending-rule spike first, dropping a template homepage in favor of a custom product layout, funding and completing steps 5 and 7 rather than leaving them unrun, and finishing CI/docs before moving to Courier. Bugs caught and fixed included handling missing `abstractaccount_execution` events by reading on-chain invoice state, rerunning refusals with the standard fee after a 135,000 uqor under-gas failure, and fixing a mobile verdict bar animation transform.
+
+---
+
+## Evidence: testnet addresses
+
+Network: `qorechain-diana` (EVM chain ID `9800`).
+
+| Role / Contract | Address |
+| --- | --- |
+| `PayGate` | `0xb0c44d0a628c4593314a5c3c113d27f2d1842a05` |
+| fUSD (ERC-20, 6 decimals) | `0x97143B771D34ddb9130b807b135Ae675A5a963CA` |
+| Owner | `qor143f0ghn8slqguwez73087dvq8lqnuuukqdu9fl` / `0xaC52f45E6787c08E3B22f45e7f35803Fc13e7396` |
+| Agent key (linked to owner, EVM calls only) | `0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be` |
+| Vendor | `qor17zwvy05e9fzerfzksdkhygm92wvapwusvh4zfv` / `0xf09cc23e992A4591A456836D7223655399D0BB90` |
+| `PayStub` (spike target, no longer allowed) | `0x500ccce41a3d219ea7751b89a59bc0248539f734` |
+| PQC precompiles | `pqcVerify` `0x0000000000000000000000000000000000000a01`, `pqcKeyStatus` `0x0000000000000000000000000000000000000a02` |
+
+---
+
+## Evidence: seven recorded testnet steps
+
+**Plain-sentence summary of key outcomes:**
+- A prompt-injected payee, a forged owner stamp, a replayed invoice, a direct `fUSD.transfer`, and a native bank send each moved **0 fUSD base units**.
+- Legitimate vendor-signed invoice `steward-demo-1` moved **10,000 fUSD base units** once (`PayGate` balance `21,932 → 11,932`), and over-cap invoice `25,000` moved **0** on queue and **25,000** only after owner ML-DSA-87 approval.
+
+| Step | What happened | Hash |
+| --- | --- | --- |
+| Setup | Smart-account spending rule linked (`1 uqor`/tx, `1 uqor`/day, 0 denoms, `PayGate.pay`/`queue` only) | `E1796894B9AAF23D653758FB10E65BCE14968A8DBBEF4E127C3E95FB8F6AC9E4` |
+| Setup | Vendor proposed, then added after 60 s timelock | Propose `0xc256f81ea8e04778ddc2d6e038af7e75e02d0903ee4a301e015a6299a6ba829d` · Execute `0xa9db709361f1f40b5a5aa61f4e5c09497b8089947337db919b6e013410677395` |
+| 1 | Vendor-signed invoice `steward-demo-1`, `10,000`, paid once | `3DEB1D5B87F0BA09BA82E1A1042EA5A7508DF1305913CD451D8960B5C08B3F84` |
+| 2 | Prompt-injected payee (`0x…00a1`) refused off chain (`REFUSED_PAYEE_MISMATCH`) and reverted on chain | `43309EEA26AA0B9BFEEAD6B3996C446417AE4BF5F8AB75CD94A6995BD9255B03` |
+| 3 | Invoice stamped with owner's ML-DSA key instead of vendor's — refused | `75FF835453F1A80F2F98D6F0ACD21EBC9D0F193D3FC8D4A2D3FDB91D9963D36D` |
+| 4 | Replay of `steward-demo-1` — refused (already `Paid`) | `27F14DE41D592DB0C9E3A60D81296C81FEE4C2BC644AF56E724EE5183D731BC0` |
+| 5 | `25,000` queued (cap `20,000`), then owner-approved inside scoped EVM window | Queue `44331E7905651F0B8F49A787ECCADE4CD1F5FF5B51B9FD2AD92C29044F41443E` · Open `02889290D115C1EEF5E4F98B2D3E00C4A3E8AE87013FE86D1E426C550EB90BE9` · Approve `0x26606a97330b87cba8d1efd683a56419a50c5e00cc7e105c8f78ef73197573ba` · Close `BA58A6DFC12349E430A1EC18B742C26A4B5AE581955729A5F06CB2E38EDAE060` |
+| 6 | Agent calls `fUSD.transfer` directly — refused by spending rule | `92854431F2D83B45BD7E4D501E7595BC1B1DAF21C300CC7B99E8ECC3D7028789` |
+| 6b | Agent attempts native bank send — refused by spending rule | `F8F7CD24C169D7E443055CD7DE8DED8DFA7F01518019B99DA654CE0282216AFA` |
+| 7 | Owner pauses `PayGate`, then unpauses | Pause `0x598cbc7bb5138e36512ced1f04a0950828bf1d774500f792846307640565e5c2` · Unpause `0xd2e27f6bc29c76a64b4935601fe225296533a8e6824f392f2d57fe2354035f2c` |
+
+---
+
+## Evidence: design decisions and cost breakdown
+
+| Decision | Why |
+| --- | --- |
+| Invoice caps in `PayGate`, zero denoms on spending rule | Spending rule caps are in `uqor`; listing `fUSD` would allow direct transfers without invoices |
+| Zero-authority relayer | Relayer pays gas and submits, but `msg.sender` grants no payout authority |
+| Payee checked before signature (and verified even against a lying precompile) | `test_lyingVerify_stillCannotRedirect` proves funds still reach only the registered payout |
+| 60 s testnet timelock on registry changes, immediate pause | Payout changes wait for review; a compromised vendor key stops immediately |
+| Read-only web verifier | Guest browser keys would need faucet QOR; live verification requires zero setup |
+
+**Cost breakdown:** Steward charges **0 protocol fee**. Owner actions (approve, pause, unpause, registry changes) pay standard QoreChain hybrid-signed window open/close fees (`180,000 uqor` each) plus EVM execution gas; agent calls pay standard `MsgExecuteEVM` gas covered by the relayer.

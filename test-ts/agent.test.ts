@@ -298,6 +298,7 @@ describe("StewardAgent policy clamp, prompt injection & receipt chain", () => {
     const r1 = await runner.processInvoice(inv1, mandate, 1_700_000_000);
     expect(r1.body.finalAction).toBe("flag");
     expect(r1.body.decisionCode).toBe("REFUSED_PAYEE_MISMATCH");
+    expect(r1.body.planner).toBe("injected-test-planner");
     expect(executedCalls).toBe(0);
 
     // Now test an honest planner with an over-cap invoice -> clamped to queue

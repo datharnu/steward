@@ -63,6 +63,11 @@ export type PlannerProposal = {
   reason: string;
   /** Captured for auditability if an injected email tricks the model into naming another payee. */
   requestedPayee?: string;
+  /**
+   * Which planner produced this proposal, e.g. `llm:anthropic:claude-opus-5-5` or `rule-based`.
+   * A Claude planner that fell back to the rules says so here. The policy never reads it.
+   */
+  planner?: string;
 };
 
 export type ClampedDecision = {

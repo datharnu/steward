@@ -195,6 +195,7 @@ export class StewardAgent {
         vendor: invoice.vendor,
         invoiceId: invoice.invoiceId,
         amount: invoice.amount,
+        planner: proposal.planner ?? this.planner.name,
         plannerAction: proposal.action,
         plannerReason: proposal.reason,
         finalAction: decision.action,

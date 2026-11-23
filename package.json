@@ -18,7 +18,10 @@
     "cli": "tsx scripts/cli.ts",
     "deploy": "tsx scripts/deploy.ts",
     "link": "tsx scripts/link-agent.ts",
-    "fund": "tsx scripts/fund.ts"
+    "fund": "tsx scripts/fund.ts",
+    "injection-demo": "tsx --env-file-if-exists=.env scripts/injection-demo.ts",
+    "llm-payment": "tsx --env-file-if-exists=.env scripts/llm-payment.ts",
+    "send-qor": "tsx scripts/send-qor.ts"
   },
   "dependencies": {
     "@cosmjs/stargate": "0.39.0",

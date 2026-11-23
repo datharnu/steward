@@ -9,7 +9,7 @@ import { fetchAuthenticators, fetchSpendingRules } from "@qorechain/sdk";
 import { TESTNET } from "haven-pq-kit";
 import { encodeFunctionData, hexToBytes, toHex, type Address, type Hex } from "viem";
 import { QoreChainExecutor, StateStore } from "../agent/executor.js";
-import { FileInboxAdapter } from "../agent/inbox.js";
+import { CourierInboxAdapter, FileInboxAdapter, onChainVendorKey } from "../agent/inbox.js";
 import { createDefaultPlanner } from "../agent/planner.js";
 import { ReceiptStore } from "../agent/receipt-store.js";
 import { AllowlistedRelayer } from "../agent/relayer.js";
@@ -80,7 +80,7 @@ async function main(): Promise<void> {
         "  pause | resume                            SIWQ off-chain agent pause/resume (no tx)",
         "  pause-gate | resume-gate                  on-chain PayGate.pause/unpause (ML-DSA PqAuth)",
         "  status                                    show PayGate, rules, and local agent state",
-        "  run                                       process inbox/ once with StewardAgent",
+        "  run [--courier <dir>]                     process inbox/ (or a Courier drop directory) once with StewardAgent",
       ].join("\n"),
     );
     return;
@@ -374,8 +374,19 @@ async function main(): Promise<void> {
       receipts,
     });
     const mandate = await runner.loadMandate(sealed);
-    const out = await runner.drainInbox(new FileInboxAdapter("inbox"), mandate);
-    console.log(`processed ${out.length} invoice(s)`);
+    const courierAt = args.indexOf("--courier");
+    const courier =
+      courierAt >= 0
+        ? new CourierInboxAdapter({
+            dir: args[courierAt + 1] ?? "courier-inbox",
+            gate: dep.payGate,
+            chainId: BigInt(TESTNET.evmChainId),
+            vendorKey: onChainVendorKey(client),
+          })
+        : undefined;
+    const out = await runner.drainInbox(courier ?? new FileInboxAdapter("inbox"), mandate);
+    for (const r of courier?.rejected() ?? []) console.log(`  refused ${r.id}: ${r.reason}`);
+    console.log(`processed ${out.length} invoice(s) with planner ${out[0]?.body.planner ?? "-"}`);
     for (const r of out) {
       console.log(`  seq=${r.body.seq} action=${r.body.finalAction} code=${r.body.decisionCode} tx=${r.body.txHash ?? "-"}`);
     }

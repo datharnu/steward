@@ -19,6 +19,13 @@ export type ReceiptBody = {
   vendor: Address;
   invoiceId: Hex;
   amount: string;
+  /**
+   * Which planner proposed the action (`llm:<provider>:<model>[:unguarded]`, `rule-based`, or
+   * `rule-based (fallback from llm:...)`). Added after the first recorded receipt; receipts
+   * written before it have no such key, and `canonicalJson` skips absent keys, so their hashes
+   * and signatures still verify unchanged.
+   */
+  planner?: string;
   plannerAction: PlannerAction;
   plannerReason: string;
   finalAction: PlannerAction;

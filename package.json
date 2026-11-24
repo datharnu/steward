@@ -5,6 +5,9 @@
   "license": "Apache-2.0",
   "type": "module",
   "description": "Steward: an accounts-payable agent whose key cannot move funds.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "spike": "tsx scripts/spike-rule.ts",
     "test:sol": "scripts/forge.sh test",

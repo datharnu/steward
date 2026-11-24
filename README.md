@@ -188,6 +188,26 @@ Built for **Build Before Q-Day** (`https://build.qorechain.io/`), category bount
 | **Public GitHub repository under MIT or Apache-2.0** | `https://github.com/datharnu/steward`, Apache-2.0 (`LICENSE`). | No QCAI dashboard audit (not required for Post-Quantum AI Agents). |
 | **README, testnet addresses, and video (up to 3 min)** | This single-file `README.md` holds all addresses and hashes; shot list (2:50) in `docs/DEMO.md`. | [Demo video](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view) (2:52). Motion-graphics explainer built from the recorded evidence, with synthetic narration (ElevenLabs); not a screen recording of a live session. |
 
+
+### Where the PQC checks are (for jurors)
+
+The two Solidity PQC items (`pqcVerify`, `pqcKeyStatus`) are checked by hand, so here is every call site.
+
+| Contract | What the ML-DSA-87 check protects | Call site |
+| --- | --- | --- |
+| `PayGate` | Owner's key status at deploy | [`src/PayGate.sol` L170](src/PayGate.sol#L170) → `PqAuth.init` |
+| `PayGate` | Approving a queued invoice, pause, unpause, registry proposals and cancels need the owner's fresh signature | [L235](src/PayGate.sol#L235), [L245](src/PayGate.sol#L245), [L252](src/PayGate.sol#L252), [L263](src/PayGate.sol#L263), [L283](src/PayGate.sol#L283) → `PqAuth.authorize` |
+| `PayGate` | Every payout needs the approved vendor's ML-DSA-87 invoice signature | [L351](src/PayGate.sol#L351) → `VendorSig.verify`; vendor key re-checked at [L362](src/PayGate.sol#L362) |
+
+All ML-DSA-87 checks go through the vendored kit `haven-pq-kit` (git submodule `lib/haven-pq-kit`, pinned at `9fe7ac2`; GitHub shows submodules only as a link, so the lines are linked here):
+
+- Precompile addresses: [`PqAuth.sol` L8–9](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/PqAuth.sol#L8-L9) — `pqcVerify` `0x…0a01`, `pqcKeyStatus` `0x…0a02`.
+- `pqcVerify` call: [`PqAuth.verify`, L75–84](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/PqAuth.sol#L75-L84); `pqcKeyStatus` call: [`PqAuth._status`, L95–105](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/PqAuth.sol#L95-L105), used by [`_loadKey`, L86](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/PqAuth.sol#L86) (registered, ML-DSA-87, possession proven, 2,592-byte key; fails closed).
+- Single-signer authorization (nonce, deadline, domain-separated message): [`PqAuth.authorize`, L45](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/PqAuth.sol#L45).
+- Vendor invoice signature: [`VendorSig.verify`, L40](https://github.com/datharnu/haven-pq-kit/blob/9fe7ac289f512e39bce6a2d5e31baeb98195519c/src/VendorSig.sol#L40).
+
+**Shared deployer.** `spike` (`qor143f0ghn8slqguwez73087dvq8lqnuuukqdu9fl`) deploys and relays for all four Haven entries (Courier, Haven Escrow, Haven Ledger, Steward). Project-page badges proven by its transactions do not by themselves mean this project uses that feature; `docs/kits.md` and this README say what this project uses.
+
 ---
 
 ## What works today

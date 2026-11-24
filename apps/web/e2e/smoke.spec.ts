@@ -18,8 +18,20 @@ for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      expect(overflow).toBe(0);
+      const { overflow, culprits } = await page.evaluate(() => {
+        const W = document.documentElement.clientWidth;
+        const culprits: string[] = [];
+        for (const el of Array.from(document.querySelectorAll("body *"))) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && r.right > W + 0.5) {
+            const cls = (el.getAttribute("class") ?? "").slice(0, 80);
+            culprits.push(`${el.tagName.toLowerCase()} right=${Math.round(r.right)} w=${Math.round(r.width)} class="${cls}" text="${(el.textContent ?? "").trim().slice(0, 40)}"`);
+          }
+        }
+        return { overflow: document.documentElement.scrollWidth - W, culprits: culprits.slice(0, 12) };
+      });
+      // On failure, name what sticks out past the right edge (fonts and scrollbars differ by OS).
+      expect(overflow, `overflow ${overflow}px; elements past the right edge:\n${culprits.join("\n")}`).toBe(0);
     });
   }
 }

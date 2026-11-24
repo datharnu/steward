@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileSignature, Home, Radio, ShieldAlert } from "lucide-react";
+import { Bot, FileSignature, Home, Radio, ShieldAlert } from "lucide-react";
 import { StewardMark } from "./brand-mark";
 
 const RAIL_LINKS = [
+  { href: "/jailbreak", label: "Jailbreak the clerk", icon: Bot },
   { href: "/gate", label: "Live Gate", icon: Radio },
   { href: "/try", label: "Try Sandbox", icon: ShieldAlert },
   { href: "/vendor", label: "Vendor Studio", icon: FileSignature },

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const PAGES = ["/", "/gate", "/try", "/vendor"];
+const PAGES = ["/", "/jailbreak", "/gate", "/try", "/vendor"];
 const WIDTHS = [390, 768, 1280];
 
 function collectErrors(page: Page): string[] {

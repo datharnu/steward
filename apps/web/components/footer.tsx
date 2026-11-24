@@ -17,6 +17,9 @@ export function Footer() {
           <Link href="/" className="transition-colors hover:text-ink">
             Overview
           </Link>
+          <Link href="/jailbreak" className="transition-colors hover:text-ink">
+            Jailbreak the clerk
+          </Link>
           <Link href="/try" className="transition-colors hover:text-ink">
             Sandbox
           </Link>

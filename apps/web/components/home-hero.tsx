@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion, type Transition } from "framer-motion";
-import { ArrowRight, Cpu, FileKey2, Lock, Radio, ShieldCheck } from "lucide-react";
+import { ArrowRight, Bot, Cpu, FileKey2, Lock, Radio, ShieldCheck } from "lucide-react";
 import { StewardMark } from "./brand-mark";
 import { StewardPreview } from "./steward-preview";
 
@@ -127,11 +127,18 @@ export function HomeHero() {
           className="flex flex-wrap items-center gap-3 pt-1"
         >
           <Link
-            href="/try"
+            href="/jailbreak"
             className="group inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand shadow-xs transition-all hover:brightness-110 active:scale-[0.98]"
           >
-            <span>Try to break it</span>
+            <Bot className="h-4 w-4" />
+            <span>Jailbreak the real AI clerk</span>
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            href="/try"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line-strong bg-surface/90 px-5 text-[15px] font-medium text-ink transition-all hover:border-brand/50 hover:bg-surface-elevated active:scale-[0.98]"
+          >
+            <span>Try to break it</span>
           </Link>
           <Link
             href="/gate"

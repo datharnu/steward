@@ -8,10 +8,11 @@ import { Moon, Sun } from "lucide-react";
 import { StewardMark } from "./brand-mark";
 
 const NAV = [
-  { href: "/gate", label: "Gate" },
-  { href: "/try", label: "Try" },
-  { href: "/vendor", label: "Vendors" },
-];
+  { href: "/jailbreak", label: "Jailbreak", wideOnly: false },
+  { href: "/gate", label: "Gate", wideOnly: false },
+  { href: "/try", label: "Try", wideOnly: false },
+  { href: "/vendor", label: "Vendors", wideOnly: true },
+] as const;
 
 function applyTheme(next: "dark" | "light") {
   const root = document.documentElement;
@@ -59,9 +60,9 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   aria-current={on ? "page" : undefined}
-                  className={`relative inline-flex min-h-9 items-center rounded-full px-3.5 text-[14px] font-medium transition-colors ${
-                    on ? "text-ink" : "text-muted hover:text-ink"
-                  }`}
+                  className={`relative min-h-9 items-center rounded-full px-2.5 text-[13.5px] font-medium transition-colors sm:px-3.5 sm:text-[14px] ${
+                    item.wideOnly ? "hidden sm:inline-flex" : "inline-flex"
+                  } ${on ? "text-ink" : "text-muted hover:text-ink"}`}
                 >
                   {on ? (
                     <motion.span

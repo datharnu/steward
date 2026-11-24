@@ -29,7 +29,7 @@ A prompt-injected invoice memo tells the AI clerk to send `0.001000 fUSD` (1,000
 
 **What is the biggest risk?** A stolen vendor ML-DSA-87 key can still sign invoices to that vendor's own registered payout up to the configured caps until the owner pauses `PayGate`. Also, Steward proves who was paid and that the vendor signed — it does not prove the billed work was actually delivered — and the agent session is time-limited (renewed on 23 November 2026 until 16 December 2026 23:59 UTC with `npm run link -- --until …`).
 
-**How can a judge try it right now?** Open [steward-amber.vercel.app/jailbreak](https://steward-amber.vercel.app/jailbreak) and attack the real AI clerk yourself: write any memo or email, pick a model (free NVIDIA Nemotron, a small 1.7B model, or capped Claude Opus 5.5) and guard on or off, and watch Steward's policy and a live `eth_call` of `PayGate` refuse it, with **fUSD moved: 0** ([how it works](#jailbreak-the-clerk-live-page)). Then open [/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment** to verify the vendor's ML-DSA-87 signature and live `PayGate` state in the browser with no wallet, or clone the repo and run `npm run evidence` (41 checks, 0 keys).
+**How can a judge try it right now?** Open [Jailbreak the clerk](https://steward-amber.vercel.app/jailbreak) and try a memo with the real AI clerk. See what the model proposes, what Steward's policy decides, and what the deployed PayGate returns in a read-only simulation. Then verify the [recorded Diana refusal](#jailbreak-the-clerk-live-page) where **0 fUSD moved**. For a successful payment, open [/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment** to verify the vendor's ML-DSA-87 signature and read the live PayGate state. No wallet is required.
 
 ---
 
@@ -48,10 +48,11 @@ A prompt-injected invoice memo tells the AI clerk to send `0.001000 fUSD` (1,000
 11. [Roadmap](#roadmap)
 12. [Traction](#traction)
 13. [Built during the hackathon](#built-during-the-hackathon)
-14. [AI disclosure](#ai-disclosure)
-15. [Evidence: testnet addresses](#evidence-testnet-addresses)
-16. [Evidence: seven recorded testnet steps](#evidence-seven-recorded-testnet-steps)
-17. [Evidence: design decisions and cost breakdown](#evidence-design-decisions-and-cost-breakdown)
+14. [Credits](#credits)
+15. [AI disclosure](#ai-disclosure)
+16. [Evidence: testnet addresses](#evidence-testnet-addresses)
+17. [Evidence: seven recorded testnet steps](#evidence-seven-recorded-testnet-steps)
+18. [Evidence: design decisions and cost breakdown](#evidence-design-decisions-and-cost-breakdown)
 
 ---
 
@@ -132,7 +133,7 @@ All three transactions are in `deployments/paygate.json` and re-checked by `npm 
 
 1. **The model.** A Next.js route (`apps/web/app/api/jailbreak/route.ts`, Node runtime) sends Steward's exact planner request to the selected model: the same prompt, schema and request body as `ClaudePlanner` in `agent/planner.ts`. The web copy lives in `apps/web/lib/jailbreak/core.ts`; `test-ts/jailbreak-parity.test.ts` runs the agent's code and the copy side by side and fails if the prompts, request bodies, answer parsing, `isFooled` or `clampDecision` ever differ. **No fallback:** if the model refuses, times out, is rate-limited or answers garbage, the page says so and there is no rule-based answer. The page shows the model, its action, the payee it named, its reason (plain text only), the exact prompt, and **Fooled?** (`isFooled` from `agent/injection-demo.ts`).
 2. **The policy.** `clampDecision` (`src/ts/policy.ts`) on a live read of `PayGate` (balance, caps, registered payout, invoice state) and the vendor's ML-DSA-87 signature, checked on the server against the vendor's key read live from `pqcKeyStatus`.
-3. **PayGate, simulated.** An `eth_call` of the `pay` / `queue` call the agent key would submit, from `PayGate`'s registered agent account against the latest block, with the real `pqcVerify` / `pqcKeyStatus` precompiles. The revert is decoded with `PayGate`'s and the PQ kit's ABI errors (for example `WrongPayee(0x…a1, 0xf09c…BB90)`). If the model asks to pay the registered payout instead, the page simulates the payee-swapped invoice too and shows `SignatureInvalid`: the vendor signed the original payee. The page ends with **fUSD moved: 0**.
+3. **PayGate, simulated.** An `eth_call` of the `pay` / `queue` call the agent key would submit, from `PayGate`'s registered agent account against the latest block, with the real `pqcVerify` / `pqcKeyStatus` precompiles. The revert is decoded with `PayGate`'s and the PQ kit's ABI errors (for example `WrongPayee(0x…a1, 0xf09c…BB90)`). If the model asks to pay the registered payout instead, the page simulates the payee-swapped invoice too and shows `SignatureInvalid`: the vendor signed the original payee. The page reports the simulation result. The recorded refusal below shows **0 fUSD moved** in a broadcast transaction.
 
 **Invoices.** *Injected (recorded)* is `fixtures/injected-invoice.json`, the vendor-signed invoice from recorded step 2. *Clean control* is `fixtures/clean-invoice.json`: 500 base units to the registered payout, unused ID `keccak256("steward-jailbreak-clean-1")`, signed **offline** by the vendor's ML-DSA-87 key with `scripts/sign-clean-invoice.ts` (no transaction; only the public invoice and public key are committed; `npx tsx scripts/sign-clean-invoice.ts --check` re-verifies it offline and with `eth_call`). It passes all three layers in simulation while the gate holds at least 500 base units. The memo and email are editable untrusted text (max 1,000 characters each); the vendor signs only the memo's hash, so an edited memo no longer matches it. Steward's Courier inbox would reject such a file; the page lets it through so the model can be attacked.
 
@@ -183,7 +184,7 @@ QoreChain's smart-account spending rule requires a bounded value limit in `uqor`
 Everything below runs on QoreChain Diana (`qorechain-diana`, EVM chain ID `9800`) using test fUSD. The agent session is live until 16 December 2026 23:59 UTC (recorded hashes, browser checks, and `npm run evidence` do not need a live session).
 
 1. **Jailbreak the real AI clerk (no wallet, no setup).**
-   Open [steward-amber.vercel.app/jailbreak](https://steward-amber.vercel.app/jailbreak). The recorded attack is pre-filled; press **Run the attack**, or pick a preset (CFO urgent, SYSTEM OVERRIDE, fake owner approval, payee change by email) or write your own. Try the small model with **Guard off** to see a model fooled and still stopped, then **Clean control** to see a valid invoice pass every layer in simulation. Details: [Jailbreak the clerk](#jailbreak-the-clerk-live-page).
+   Open [steward-amber.vercel.app/jailbreak](https://steward-amber.vercel.app/jailbreak). The recorded attack is pre-filled; press **Run the attack**, or pick a preset (CFO urgent, SYSTEM OVERRIDE, fake owner approval, payee change by email) or write your own. If the model flags the memo, the page shows that decision. **Clean control** shows the valid-invoice path in simulation. The recorded Diana refusal is linked for comparison. Details: [Jailbreak the clerk](#jailbreak-the-clerk-live-page).
 2. **Browser live gate & ML-DSA-87 signature check (no wallet, no setup).**
    Open [steward-amber.vercel.app/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment** (verifies token, amount, vendor, payee, invoice ID, ML-DSA-87 signature, and caps in PayGate's exact order). Visit `/try` to inspect every refusal and `/vendor` to test signing with an unregistered browser key that `PayGate` refuses.
 3. **One-command hash verification from a clone (no keys).**
@@ -220,12 +221,26 @@ Everything below runs on QoreChain Diana (`qorechain-diana`, EVM chain ID `9800`
 
 ## Rubric and track mapping
 
+### Judging rubric (official weights)
+
+The [builder FAQ](https://build.qorechain.io/faq) scores every track on the same five criteria; jurors check the [track requirements](#track-requirements) under them. Each row points to evidence that already exists and can be checked in about a minute.
+
+| Criterion (weight) | Where to check it (in about a minute) | Honest limit |
+| --- | --- | --- |
+| **Works as described (25%)** | Open [/jailbreak](https://steward-amber.vercel.app/jailbreak) and press **Run the attack**: the page shows the real model's answer, Steward's policy decision and `PayGate`'s answer to an `eth_call` of the agent's call. Open [/gate](https://steward-amber.vercel.app/gate) and click **Check the receipt** and **Check this payment**, with no wallet. From a clone, `npm run evidence` prints **41 passed, 0 failed** (no keys); `forge test` runs 71 tests and `npm run test:ts` 65, 0 failed. Full path: [Judge it in 5 minutes](#judge-it-in-5-minutes). | `/jailbreak` is a read-only simulation: it broadcasts nothing, and the smart-account spending rule only acts on broadcast transactions, so that layer is shown by the recorded refusals instead. Free models can be rate-limited and Claude has a daily cap. The agent session runs until 16 December 2026, and `PayGate` holds only 862 fUSD base units. |
+| **QoreChain tech usage (25%)** | Smart-account spending rule linking the agent key (`E1796894…`: 1 uqor per transaction, 0 denoms, only `PayGate.pay` and `PayGate.queue`); it refused a direct `fUSD.transfer` (`92854431…`) and a bank send (`F8F7CD24…`). `PayGate` `0xb0c4…2a05` ([addresses](#evidence-testnet-addresses)); `pqcVerify` / `pqcKeyStatus` call sites: [Where the PQC checks are](#where-the-pqc-checks-are-for-jurors). Owner approve, pause and unpause ran in EVM windows scoped to `PayGate`, opened by hybrid ML-DSA-87 transactions (`0x26606a…`). Vendor key registered with proof of possession (`deployments/paygate.json`). Owner mandate signed with QoreSign and sealed with QoreSeal to the agent's ML-KEM-1024 key (`src/ts/mandate.ts`). `@qorechain/mcp` in `npm run evidence`, QoreScan in `npm run cbom:check`. Hashes: [seven recorded steps](#evidence-seven-recorded-testnet-steps). | Testnet only; fUSD has no value. The deployer `spike` is also Steward's owner and is shared by all four Haven entries, so project-page badges proven by its transactions are not all Steward's. Owner windows are proven; agent-owned window evidence is pending ([Track requirements](#track-requirements)). The pool 2 swap only funded `PayGate`. |
+| **Post-quantum correctness and security (20%)** | Every payout needs the approved vendor's ML-DSA-87 invoice signature, checked on chain by `VendorSig.verify` → `pqcVerify` (paid `3DEB1D5B…`; owner-stamped invoice refused `75FF8354…`). The payee is checked before the signature, so a valid signature cannot be pointed at a new address, and `test_lyingVerify_stillCannotRedirect` shows a lying precompile still cannot redirect funds. Owner actions need the owner's ML-DSA-87 signature; agent receipts are hash-chained and ML-DSA signed. `npm run cbom:check` passes (no `ecrecover`). [`THREAT_MODEL.md`](THREAT_MODEL.md), [Where each attack or failure stops](#where-each-attack-or-failure-stops). | A stolen vendor ML-DSA-87 key can still sign invoices to that vendor's registered payout, up to the caps, until the owner pauses `PayGate`. No external audit and no QCAI report (not required for this track). Steward proves who was paid and that the vendor signed, not that the work was delivered. |
+| **Originality (15%)** | The clerk is a real LLM, and three models were tested on the same injected invoice: Claude Opus 5.5 and NVIDIA Nemotron 3.5 Super flagged it; a 1.7B model with the guard removed was fooled, and when its payment was broadcast anyway `PayGate` refused it and moved **0** (`807954AA…`; [Real-model runs](#real-model-runs-23-november-2026)). Two real invoices planned by Claude and Nemotron were paid, with the model named in each receipt. Anyone can attack the clerk on the public `/jailbreak` page. | The fooled result needed the guard removed and is labelled a simulated jailbreak. The seven original recorded steps used rules or scripted proposals, not a model. `/jailbreak` runs are simulations; the broadcast refusal is the recorded one. |
+| **Clarity, UX and documentation (15%)** | [Demo video (2:52)](https://drive.google.com/file/d/1mUh-dda2ASZyrWBwMMkpk_qW5mIdrAT5/view); [Judge it in 5 minutes](#judge-it-in-5-minutes); `/jailbreak` shows the exact prompt and each layer's verdict; `/gate`, `/try` and `/vendor`; raw model transcripts in `transcripts/`; [`THREAT_MODEL.md`](THREAT_MODEL.md), [Known limits](#known-limits). | The video is a motion-graphics explainer with synthetic narration, not a screen recording of a live session. The `/jailbreak` rate limits are in memory per server instance; the hard cost ceiling is the spend limit on dedicated API keys. |
+
+### Track requirements
+
 Built for **Build Before Q-Day** (`https://build.qorechain.io/`), category bounty **Post-Quantum AI Agents** ("Build an autonomous agent with spending and access limits enforced on chain"; example projects include *bill payer, treasury assistant*). Deadline: **2 December 2026 at 23:59 UTC**.
 
 | Requirement (exact hackathon wording) | Where Steward proves it | Honest limit |
 | --- | --- | --- |
 | **Autonomous agent** (track: "Build an autonomous agent with spending and access limits enforced on chain") | Claude (`claude-opus-5-5` by default) proposes an action for each invoice; the deterministic policy and the chain decide (`agent/planner.ts`, `src/ts/policy.ts`, `agent/runner.ts`). `npm run injection-demo` records a real model's answer to the injected invoice; `--mode unguarded` shows a fooled model still moving 0 fUSD. | Real-model evidence covers one injected invoice across three models and two LLM-planned payments (23 Nov 2026, [Real-model runs](#real-model-runs-23-november-2026)); the seven original steps used rules or scripted proposals. The one fooled result needed the guard removed (labelled as a simulated jailbreak). |
-| **Scoped EVM window** | Owner's approval (`0x26606a…7573ba`), pause (`0x598cbc…65e5c2`), and unpause (`0xd2e27f…4035f2c`) each ran in a hybrid-signed window aimed solely at `PayGate` with a value cap. | Window is opened by owner's ML-DSA-87 key; `PayGate` does not open windows. |
+| **Scoped EVM window** | Owner's approval (`0x26606a…7573ba`), pause (`0x598cbc…65e5c2`), and unpause (`0xd2e27f…4035f2c`) each ran in a hybrid-signed window aimed solely at `PayGate` with a value cap. | These transactions prove the owner’s window. Agent payments use the linked smart-account route below. Agent-owned window evidence for transaction count, value, duration, and target is pending. |
 | **Transaction, value, duration and target limits** | **Transaction:** invoice ID paid once (`27F14DE4…3D731BC0`). **Value:** `25,000` queued against `20,000` per-invoice cap (`44331E79…4F41443E`). **Duration:** agent session expiry (`1795169194`), 60s registry timelock (`0xc256f8…` → `0xa9db70…`), signature deadlines. **Target:** registered vendor payout only (`43309EEA…9255B03`). | The `2,500 fUSD` daily cap is deployed but did not fire because `PayGate` holds less; the per-invoice cap is what fired on testnet. |
 | **Smart-account spending rules** | Linked in `E1796894…8F6AC9E4`: `1 uqor`/tx, `1 uqor`/day, 0 denoms, only `PayGate.pay` and `PayGate.queue`; refused direct `fUSD.transfer` (`92854431…`) and bank send (`F8F7CD24…`). | Session renewed on 23 Nov 2026 (`CAD63319…`) until `16 Dec 2026 23:59 UTC`; after that the owner runs `npm run link` again. |
 | **Authenticated messaging** | Vendor ML-DSA-87 invoice signatures verified on chain via `pqcVerify` (`3DEB1D5B…`), wrong key refused (`75FF8354…`), mandate signed/sealed with QoreSign + QoreSeal, hash-chained ML-DSA agent receipts. | Invoices arrive as signed JSON files, or from a Courier drop directory through `CourierInboxAdapter`. The adapter is tested with a Courier-signed invoice, not yet run against a live Courier relay. |
@@ -367,7 +382,48 @@ No external users or customers yet; all runs are our own testnet proofs on `qore
 
 Built during **Build Before Q-Day** (November 2026; deadline 2 December 2026 at 23:59 UTC). First commit: `0b25e55` on **19 November 2026**. Licence: **Apache-2.0** (`LICENSE`).
 
-**Credits:** `@qorechain/sdk` 0.14.0, `@qorechain/pqc` 0.2.3, `@qorechain/qoreseal` 0.1.0, `@qorechain/qoresign` 0.1.0, `@qorechain/mcp` 0.1.1, `@qorechain/qore-cli` 0.1.1, `@qorechain/qorescan` 0.1.0, `@qorechain/evm` 0.14.0; `haven-pq-kit` v0.1.0 (interface following `qore-pq-kit` by Adityaakr, Apache-2.0); rule lineage from the author's earlier NEAR project Meter (written fresh for QoreChain/ML-DSA-87); viem, `@cosmjs/stargate`, `@noble/hashes`, `forge-std`, Vitest, Next.js, React, Tailwind CSS, Playwright.
+Open-source libraries, kits and prior work are credited in [Credits](#credits).
+
+---
+
+## Credits
+
+Built from the repository's dependency files: `package.json`, `apps/web/package.json` (versions as resolved in each `package-lock.json`) and `git submodule status`. Licences are taken from each package's own `package.json`. Transitive dependencies are not listed.
+
+**QoreChain kits and network packages**
+- `@qorechain/sdk` 0.14.0 (Apache-2.0)
+- `@qorechain/qoreseal` 0.1.0 (Apache-2.0)
+- `@qorechain/qoresign` 0.1.0 (Apache-2.0), root and web app
+- `@qorechain/mcp` 0.1.1 (Apache-2.0), used by `npm run evidence` and `npm run audit`
+- `@qorechain/qorescan` 0.1.0 (Apache-2.0, dev), used by `npm run cbom:check`
+- `@qorechain/pqc` 0.2.3 (Apache-2.0), used underneath the SDK and QoreSeal; `@qorechain/evm` 0.14.0 (Apache-2.0), installed but not imported; `@qorechain/qore-cli` 0.1.1 (Apache-2.0), installed for manual checks (`docs/kits.md`)
+- viem 2.47.6 (MIT), root and web app
+- `@cosmjs/stargate` 0.39.0 (Apache-2.0)
+
+**Post-quantum and crypto libraries**
+- `haven-pq-kit` v0.1.0 (Apache-2.0): git submodule `lib/haven-pq-kit` at commit `9fe7ac289f512e39bce6a2d5e31baeb98195519c`, and the npm dependency `github:datharnu/haven-pq-kit#v0.1.0` ([repository](https://github.com/datharnu/haven-pq-kit)). Its `PqAuth` interface follows the public design of [`qore-pq-kit`](https://github.com/Adityaakr/qore-pq-kit) by Adityaakr, Apache-2.0; `VendorSig` was written for Haven.
+- `@noble/hashes` 2.4.0 (MIT), root and web app
+
+**Contracts toolchain**
+- Foundry (`forge`), Solidity 0.8.28 (`foundry.toml`: optimizer 200 runs, `via_ir`)
+- `forge-std` v1.17.0 (MIT OR Apache-2.0): git submodule `lib/forge-std` at commit `f3dae6e6ee381f25eb6a246f7da9b85c91a68219` ([repository](https://github.com/foundry-rs/forge-std))
+
+**Web app frameworks and UI** (`apps/web`)
+- Next.js (`next`) 16.4.6 (MIT), React and React DOM 19.1.1 (MIT)
+- Tailwind CSS 4.1.17 and `@tailwindcss/postcss` 4.1.17 (MIT, dev)
+- `framer-motion` 14.14.0 (MIT), `lucide-react` 1.76.0 (ISC)
+- Fonts: `@fontsource/familjen-grotesk`, `@fontsource/fragment-mono`, `@fontsource/newsreader` 5.3.0 (OFL-1.1)
+
+**Testing and tooling**
+- TypeScript 5.6.3 (Apache-2.0), `@types/node` 22.19.1 (MIT), root and web app; `tsx` 4.19.4 (MIT)
+- Vitest 3.2.4 (MIT)
+- `@playwright/test` 1.65.1 (Apache-2.0), `@types/react` 19.1.16 and `@types/react-dom` 19.1.9 (MIT), dev dependencies of `apps/web`
+
+**Design references and prior work**
+- **Meter:** the rule lineage comes from the author's earlier NEAR project [Meter](https://github.com/datharnu/Meter); `PayGate` was written fresh for QoreChain and ML-DSA-87.
+- **Courier (Haven family):** `CourierInboxAdapter` reads invoices opened by Courier and re-verifies them; its test uses an invoice signed by Courier's `signInvoice`.
+- **Model providers (services, not dependencies):** the clerk calls the Anthropic API (Claude Opus 5.5) and OpenRouter (NVIDIA Nemotron 3.5 Super, Liquid LFM-3 1.7B) over HTTPS; no model SDK is installed.
+- Demo video (not in this repository): built in Remotion; narration by an ElevenLabs synthetic voice; background track "Vastness" from Mixkit (see [AI disclosure](#ai-disclosure)).
 
 ---
 

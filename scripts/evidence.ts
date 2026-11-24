@@ -8,11 +8,21 @@ import { TOOLS, toolContext } from "@qorechain/mcp";
  * - `enrollment`: classically signed ML-DSA registration.
  * - `classical`: EVM-lane transaction inside a scoped window.
  * - `refused`: expected on-chain refusal (code != 0 or `execution_failures` present).
+ * `noHashRefusals` (deployments/agent-window.json) are refusals the node made at broadcast: they
+ * have no hash, so they are printed with the recorded error text and are not counted or re-checked.
  */
 type Tier = "pqc" | "enrollment" | "classical" | "refused";
 
 type Entry = { hash: string; tier: Tier; note: string };
-type DeploymentFile = { network: string; transactions: Entry[] };
+type NoHashRefusal = {
+  step: string;
+  limit: string;
+  signedHash: string;
+  chainError: { code: number | null; message: string };
+  height: string;
+};
+type DeploymentFile = { network: string; transactions: Entry[]; noHashRefusals?: NoHashRefusal[] };
+type Unrecheckable = { file: string; refusal: NoHashRefusal };
 type Row = { file: string; hash: string; tier: Tier; ok: boolean; detail: string; note: string };
 
 type TransactionResult = { success: boolean; failure?: unknown; execution_failures?: unknown[] };
@@ -58,16 +68,33 @@ async function check(file: string, entry: Entry): Promise<Row> {
   }
 }
 
-export async function checkEvidence(dir: string): Promise<Row[]> {
-  if (!existsSync(dir)) return [];
+/**
+ * Re-checks every hash. Refusals the node made at broadcast (no hash, e.g. an EVM window limit in
+ * deployments/agent-window.json) are returned separately: there is nothing on chain to re-check,
+ * only the node's recorded error text.
+ */
+export async function checkEvidence(dir: string): Promise<{ rows: Row[]; unrecheckable: Unrecheckable[] }> {
+  if (!existsSync(dir)) return { rows: [], unrecheckable: [] };
   const files = readdirSync(dir).filter((name) => name.endsWith(".json")).sort();
   const rows: Row[] = [];
+  const unrecheckable: Unrecheckable[] = [];
   for (const name of files) {
     const document = JSON.parse(readFileSync(join(dir, name), "utf8")) as DeploymentFile;
     if (document.network !== "qorechain-diana") throw new Error(`${name}: network ${document.network} is not the testnet`);
     for (const entry of document.transactions ?? []) rows.push(await check(name, entry));
+    for (const refusal of document.noHashRefusals ?? []) unrecheckable.push({ file: name, refusal });
   }
-  return rows;
+  return { rows, unrecheckable };
+}
+
+function printUnrecheckable(items: Unrecheckable[]): void {
+  if (items.length === 0) return;
+  console.log(`\nRefused at broadcast, no transaction hash (${items.length}): not re-checkable on chain; the node's answer as recorded:`);
+  for (const { file, refusal } of items) {
+    console.log(
+      `  ${file}  ${refusal.step} (${refusal.limit} limit) at height ${refusal.height}: [${refusal.chainError.code ?? "-"}] ${refusal.chainError.message}  (signed hash ${refusal.signedHash}, never included)`,
+    );
+  }
 }
 
 function printTable(rows: Row[]): void {
@@ -82,12 +109,13 @@ function printTable(rows: Row[]): void {
 
 const dir = process.argv[2] ?? "deployments";
 checkEvidence(dir)
-  .then((rows) => {
+  .then(({ rows, unrecheckable }) => {
     if (rows.length === 0) {
       console.error(`no transactions recorded in ${dir}`);
       process.exit(1);
     }
     printTable(rows);
+    printUnrecheckable(unrecheckable);
     const failed = rows.filter((row) => !row.ok).length;
     console.log(`\n${rows.length - failed} passed, ${failed} failed`);
     process.exit(failed === 0 ? 0 : 1);

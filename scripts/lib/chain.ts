@@ -31,7 +31,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import { readMnemonic, writeSecret } from "../secrets.js";
 
 export const CHAIN_ID = TESTNET.chainId;
-const FEE = { amount: [{ denom: "uqor", amount: "180000" }], gas: "1200000" };
+/** The fixed fee every native-lane transaction from these scripts pays, in uqor. */
+export const NATIVE_FEE_UQOR = 180_000n;
+const FEE = { amount: [{ denom: "uqor", amount: NATIVE_FEE_UQOR.toString() }], gas: "1200000" };
 
 export function evmClient(): PublicClient {
   return createPublicClient({ chain: qorechainDiana, transport: http(TESTNET.evmRpc) });

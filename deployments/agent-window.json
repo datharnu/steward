@@ -1,0 +1,347 @@
+{
+  "network": "qorechain-diana",
+  "evmChainId": 9800,
+  "recordedAt": "2026-11-24T11:26:24.279Z",
+  "status": "complete",
+  "agent": {
+    "name": "steward-agent",
+    "cosmos": "qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel",
+    "evm": "0x9C3876f2033552D5293e6efcAdFED87BfEB7E6be"
+  },
+  "payGate": "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05",
+  "otherTarget": "0x97143B771D34ddb9130b807b135Ae675A5a963CA",
+  "gas": {
+    "gas": "40000",
+    "maxFeePerGas": "112500000000"
+  },
+  "windows": [
+    {
+      "label": "W1",
+      "params": {
+        "blocks": 600,
+        "maxTxs": 1,
+        "maxValueUqor": "20000",
+        "targets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "openHash": "5F6D217C6216DB4600490FCC81871A9B1C823488E787237CA8C85FC5775456DF",
+      "openHeight": "10664552",
+      "onChain": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10664552",
+        "expiryHeight": "10665152",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "599",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      }
+    },
+    {
+      "label": "W2",
+      "params": {
+        "blocks": 20,
+        "maxTxs": 1,
+        "maxValueUqor": "20000",
+        "targets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "openHash": "406BA7ED15086D893D324F00258E2BA31AAB99A55926B3C401720CAC4C85B45D",
+      "openHeight": "10664560",
+      "onChain": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10664560",
+        "expiryHeight": "10664580",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "18",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "S0-fund",
+      "expect": "lands (code 0)",
+      "asExpected": true,
+      "height": "10664545",
+      "hash": "BA281B3EC620A9EB83A817FA3D01F1C9C84D186884AA5A7FF54C5722713AE8AE",
+      "note": "bank send 700000 uqor spike -> steward-agent (qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel); the agent account does not exist on chain until it holds QOR"
+    },
+    {
+      "id": "S1-register",
+      "expect": "lands; pqcKeyStatus then reads registered=true, algorithm 1, possessionProven=true",
+      "asExpected": true,
+      "height": "10664549",
+      "hash": "6F65B511B0BF6E1384BA132BEC31C21F69556030A889D892C36C03FB90FB95B7",
+      "note": "pqcKeyStatus: registered=true algorithm=1 possessionProven=true"
+    },
+    {
+      "id": "S-open-W1",
+      "expect": "lands; REST evm_window reads live with these bounds",
+      "asExpected": true,
+      "height": "10664552",
+      "hash": "5F6D217C6216DB4600490FCC81871A9B1C823488E787237CA8C85FC5775456DF",
+      "note": "MsgOpenEVMWindow W1: blocks=600, maxTxs=1, maxValue=20000 uqor, allowedTargets=[0xb0c44d0a628c4593314a5c3c113d27f2d1842a05] — target, value and transaction-count limits, and the in-target call that lands"
+    },
+    {
+      "id": "P1-target",
+      "limit": "target",
+      "expect": "the window refuses it (target limit); expected at broadcast with no hash, chain text recorded verbatim",
+      "asExpected": true,
+      "height": "10664554",
+      "signedHash": "0xe8be5a62c4bfc20033e95ae63d667eecb75aad8d6b4d393ef83d7857b4d5e91c",
+      "windowBefore": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10664552",
+        "expiryHeight": "10665152",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "598",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "note": "fUSD.decimals() — a contract outside the window's target list",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction: the window does not list 0x97143B771D34ddb9130b807b135Ae675A5a963CA as an allowed recipient: EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted"
+    },
+    {
+      "id": "P2-value",
+      "limit": "value",
+      "expect": "the window refuses it (value limit); expected at broadcast with no hash, chain text recorded verbatim",
+      "asExpected": true,
+      "height": "10664555",
+      "signedHash": "0x5956d263e1207e763c0ddd119492c2bedc20b99c0dd3afd373d43e8d693f6296",
+      "windowBefore": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10664552",
+        "expiryHeight": "10665152",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "597",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "note": "PayGate.ownerNonce() carrying 50000 uqor, over the window's 20000 uqor budget",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 596 blocks, 1 transactions, 20000 uqor; this transaction needs 54500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted"
+    },
+    {
+      "id": "P3-lands",
+      "expect": "the window admits it and it lands with a hash; PayGate executes a view function, nothing changes",
+      "asExpected": true,
+      "height": "10664558",
+      "signedHash": "0xc7d50935884de61a399a573a674dbb82ee157aa8ebb8f1473d35918d8b50df6f",
+      "windowBefore": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10664552",
+        "expiryHeight": "10665152",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "596",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "note": "PayGate.ownerNonce() with no value — in target, in budget, the window's one transaction",
+      "hash": "0xc7d50935884de61a399a573a674dbb82ee157aa8ebb8f1473d35918d8b50df6f"
+    },
+    {
+      "id": "P4-transactions",
+      "limit": "transactions",
+      "expect": "the window refuses it (transactions limit); expected at broadcast with no hash, chain text recorded verbatim",
+      "asExpected": true,
+      "height": "10664558",
+      "signedHash": "0x235c4a248962ccb167690d5163a48d0bbfb5c18fc8771fcfe157407c9ab61667",
+      "windowBefore": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10664552",
+        "expiryHeight": "10665152",
+        "maxTxs": "1",
+        "usedTxs": "1",
+        "maxValue": "20000",
+        "usedValue": "4500",
+        "remainingBlocks": "594",
+        "remainingTxs": "0",
+        "remainingValue": "15500",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "note": "the same PayGate call again: a second transaction in a window that admits one",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 594 blocks, 0 transactions, 15500 uqor; this transaction needs 4500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted"
+    },
+    {
+      "id": "S-open-W2",
+      "expect": "lands; REST evm_window reads live with these bounds",
+      "asExpected": true,
+      "height": "10664560",
+      "hash": "406BA7ED15086D893D324F00258E2BA31AAB99A55926B3C401720CAC4C85B45D",
+      "note": "MsgOpenEVMWindow W2: blocks=20, maxTxs=1, maxValue=20000 uqor, allowedTargets=[0xb0c44d0a628c4593314a5c3c113d27f2d1842a05] — duration limit: left to expire unused, then probed"
+    },
+    {
+      "id": "S-wait-W2",
+      "expect": "REST evm_window reads remaining_blocks=0 with remaining_txs=1",
+      "asExpected": true,
+      "height": "10664582",
+      "note": "expiry height 10664580"
+    },
+    {
+      "id": "P5-duration",
+      "limit": "duration",
+      "expect": "the window refuses it (duration limit); expected at broadcast with no hash, chain text recorded verbatim",
+      "asExpected": true,
+      "height": "10664583",
+      "signedHash": "0x11425855344e7a67868d90196e5b6a8b57ed4d182a81e823e0b5216798cdb59c",
+      "windowBefore": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10664560",
+        "expiryHeight": "10664580",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "20000",
+        "usedValue": "0",
+        "remainingBlocks": "0",
+        "remainingTxs": "1",
+        "remainingValue": "20000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xb0c44d0a628c4593314a5c3c113d27f2d1842a05"
+        ]
+      },
+      "note": "the same PayGate call after W2's blocks have passed, with its transaction and value unused",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 0 blocks, 1 transactions, 20000 uqor; this transaction needs 4500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted"
+    }
+  ],
+  "transactions": [
+    {
+      "hash": "BA281B3EC620A9EB83A817FA3D01F1C9C84D186884AA5A7FF54C5722713AE8AE",
+      "tier": "pqc",
+      "note": "fund steward-agent with 700000 uqor from spike"
+    },
+    {
+      "hash": "6F65B511B0BF6E1384BA132BEC31C21F69556030A889D892C36C03FB90FB95B7",
+      "tier": "enrollment",
+      "note": "steward-agent ML-DSA-87 registration with proof of possession"
+    },
+    {
+      "hash": "5F6D217C6216DB4600490FCC81871A9B1C823488E787237CA8C85FC5775456DF",
+      "tier": "pqc",
+      "note": "steward-agent opens its own EVM window W1 (hybrid ML-DSA-87): 1 tx, 20000 uqor, 600 blocks, targets PayGate"
+    },
+    {
+      "hash": "0xc7d50935884de61a399a573a674dbb82ee157aa8ebb8f1473d35918d8b50df6f",
+      "tier": "classical",
+      "note": "steward-agent inside its own window W1: PayGate.ownerNonce() with no value — in target, in budget, the window's one transaction"
+    },
+    {
+      "hash": "406BA7ED15086D893D324F00258E2BA31AAB99A55926B3C401720CAC4C85B45D",
+      "tier": "pqc",
+      "note": "steward-agent opens its own EVM window W2 (hybrid ML-DSA-87): 1 tx, 20000 uqor, 20 blocks, targets PayGate"
+    }
+  ],
+  "noHashRefusals": [
+    {
+      "step": "P1-target",
+      "limit": "target",
+      "signedHash": "0xe8be5a62c4bfc20033e95ae63d667eecb75aad8d6b4d393ef83d7857b4d5e91c",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction: the window does not list 0x97143B771D34ddb9130b807b135Ae675A5a963CA as an allowed recipient: EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted",
+      "height": "10664554",
+      "note": "fUSD.decimals() — a contract outside the window's target list"
+    },
+    {
+      "step": "P2-value",
+      "limit": "value",
+      "signedHash": "0x5956d263e1207e763c0ddd119492c2bedc20b99c0dd3afd373d43e8d693f6296",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 596 blocks, 1 transactions, 20000 uqor; this transaction needs 54500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted",
+      "height": "10664555",
+      "note": "PayGate.ownerNonce() carrying 50000 uqor, over the window's 20000 uqor budget"
+    },
+    {
+      "step": "P4-transactions",
+      "limit": "transactions",
+      "signedHash": "0x235c4a248962ccb167690d5163a48d0bbfb5c18fc8771fcfe157407c9ab61667",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 594 blocks, 0 transactions, 15500 uqor; this transaction needs 4500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted",
+      "height": "10664558",
+      "note": "the same PayGate call again: a second transaction in a window that admits one"
+    },
+    {
+      "step": "P5-duration",
+      "limit": "duration",
+      "signedHash": "0x11425855344e7a67868d90196e5b6a8b57ed4d182a81e823e0b5216798cdb59c",
+      "chainError": {
+        "code": -32000,
+        "message": "failed to broadcast transaction: the EVM authorisation window for qor1nsu8dusrx4fd22f7dm72mlkc00lt0e477k0fel does not admit this transaction (remaining: 0 blocks, 1 transactions, 20000 uqor; this transaction needs 4500 uqor): EVM authorisation window exhausted: EVM authorisation window exhausted [cosmossdk.io/errors@v1.0.2/errors.go:77]"
+      },
+      "windowRejection": "exhausted",
+      "height": "10664583",
+      "note": "the same PayGate call after W2's blocks have passed, with its transaction and value unused"
+    }
+  ]
+}

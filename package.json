@@ -24,7 +24,8 @@
     "fund": "tsx scripts/fund.ts",
     "injection-demo": "tsx --env-file-if-exists=.env scripts/injection-demo.ts",
     "llm-payment": "tsx --env-file-if-exists=.env scripts/llm-payment.ts",
-    "send-qor": "tsx scripts/send-qor.ts"
+    "send-qor": "tsx scripts/send-qor.ts",
+    "demo:window": "tsx scripts/demo-agent-window.ts"
   },
   "dependencies": {
     "@cosmjs/stargate": "0.39.0",

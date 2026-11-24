@@ -86,12 +86,13 @@ export function Faq() {
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-all duration-200 ${
                         isOpen
-                          ? "rotate-45 border-brand/50 bg-brand-soft text-brand"
+                          ? "border-brand/50 bg-brand-soft text-brand"
                           : "border-line bg-surface text-muted"
                       }`}
                       aria-hidden="true"
                     >
-                      <Plus className="h-4 w-4" />
+                      {/* Rotate the icon, not the box: a rotated 28px box is ~40px wide and spilled past the edge. */}
+                      <Plus className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-45" : ""}`} />
                     </span>
                   </button>
                 </dt>
